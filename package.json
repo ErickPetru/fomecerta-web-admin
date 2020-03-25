@@ -1,0 +1,14 @@
+{
+  "name": "fomecerta-web-admin",
+  "description": "Sistema Web de administração do app Fome Certa",
+  "author": "Erick Eduardo Petrucelli <erick.petrucelli@fatectq.edu.br>",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:src": "cd src && npm i && cd ..",
+    "install:functions": "cd functions && npm i && cd ..",
+    "install": "npm run install:src && npm run install:functions",
+    "dev": "npm --prefix src run dev",
+    "deploy": "firebase deploy"
+  }
+}

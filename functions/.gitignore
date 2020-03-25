@@ -1,0 +1,36 @@
+# Logs
+/logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+
+# nuxt.js build output
+nuxt
+
+# macOS
+.DS_Store
+
+# Firebase temporary folder
+.firebase
+
+# Firebase public static folder
+public
+
+# nuxt.js config
+nuxt.config.js

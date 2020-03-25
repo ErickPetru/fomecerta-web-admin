@@ -1,0 +1,18 @@
+# Logs
+/logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# dotenv environment variables file
+.env
+
+# macOS
+.DS_Store
+
+# Firebase temporary folder
+.firebase
+
+# Firebase public static folder
+public

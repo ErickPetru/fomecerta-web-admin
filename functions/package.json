@@ -1,0 +1,29 @@
+{
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "author": "Erick Eduardo Petrucelli <erick.petrucelli@fatectq.edu.br>",
+  "private": true,
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "10"
+  },
+  "dependencies": {
+    "express": "^4.16.4",
+    "firebase-admin": "^8.6.0",
+    "firebase-functions": "^3.3.0",
+    "nuxt": "^2.12.1",
+    "nuxt-start": "^2.12.0",
+    "vuetify": "^2.2.19",
+    "vuetify-loader": "^1.4.3"
+  },
+  "devDependencies": {
+    "@nuxtjs/vuetify": "^1.11.0",
+    "firebase-functions-test": "^0.1.6"
+  }
+}
