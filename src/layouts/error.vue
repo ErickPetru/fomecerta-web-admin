@@ -29,7 +29,7 @@
             Opa! Ocorreu um problema inesperado...
           </v-card-title>
           <v-card-text class="pa-4 pt-5 pb-2">
-            <p>Sentimentos muito, mas não foi possível concluir a operação que você tentou realizar. Provavelmente é um problema temporário, mas se pesistir, não deixe de entrar em contato conosco.</p>
+            <p>Sentimentos muito, mas não foi possível concluir a operação que você tentou realizar. Provavelmente é um problema temporário, mas se pesistir, entre em contato conosco.</p>
           </v-card-text>
         </v-card>
 
