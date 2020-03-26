@@ -25,6 +25,8 @@ module.exports = {
   ],
   buildModules: [
     '@nuxtjs/vuetify',
+    '@nuxtjs/eslint-module',
+    '@nuxtjs/vuetify'
   ],
   modules: [
   ],

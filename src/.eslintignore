@@ -1,0 +1,17 @@
+# js vendor files with import/require
+assets/vendor/**
+
+# static vendor files
+static/**
+
+# dependencies
+node_modules
+
+# Nuxt build
+nuxt
+
+# Nuxt generate
+dist
+
+# Nuxt config
+nuxt.config.js
