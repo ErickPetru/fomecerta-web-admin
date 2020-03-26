@@ -4,15 +4,15 @@
       <v-flex xs12 sm8 md6>
         <v-card>
           <v-card-title>
-            Boas-vindas ao <Logo class="ml-2" />!
+            Boas-vindas ao
+            <Logo class="ml-2" />!
           </v-card-title>
           <v-card-text>
-            <p>
-              Em breve, teremos conteúdo na página inicial.
-            </p>
+            <p>Em breve, teremos conteúdo na página inicial.</p>
 
             <p>
-              Por enquanto, utilize o <a href="/menu" @click.prevent="showDrawer">menu à direita</a> para navegar.
+              Por enquanto, utilize o
+              <a href="/menu" @click.prevent="showDrawer">menu à direita</a> para navegar.
             </p>
           </v-card-text>
         </v-card>
@@ -25,6 +25,7 @@
 import { mapActions, mapGetters } from 'vuex'
 
 export default {
+  middleware: 'auth',
   components: {
     Logo: () => import('@/components/Logo.vue')
   },
@@ -37,6 +38,9 @@ export default {
     showDrawer () {
       if (!this.isDrawerOpen) this.setDrawerOpen(true)
     }
-  }
+  },
+  head: () => ({
+    title: 'Página inicial'
+  })
 }
 </script>

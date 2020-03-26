@@ -50,6 +50,7 @@
 import { mapState, mapGetters } from 'vuex'
 
 export default {
+  middleware: 'guest',
   layout: 'center',
   components: {
     Logo: () => import('@/components/Logo.vue')
@@ -96,7 +97,10 @@ export default {
         )
       }
     }
-  }
+  },
+  head: () => ({
+    title: 'Acesso à área restrita'
+  })
 }
 </script>
 
