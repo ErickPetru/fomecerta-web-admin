@@ -22,6 +22,7 @@ module.exports = {
   css: [
   ],
   plugins: [
+    '~/plugins/snackbar.js'
   ],
   buildModules: [
     '@nuxtjs/vuetify',
