@@ -25,11 +25,11 @@ module.exports = {
     '~/plugins/snackbar.js'
   ],
   buildModules: [
-    '@nuxtjs/vuetify',
     '@nuxtjs/eslint-module',
     '@nuxtjs/vuetify'
   ],
   modules: [
+    '@nuxtjs/firebase'
   ],
   vuetify: {
     customVariables: ['~/assets/variables.scss'],
@@ -45,6 +45,28 @@ module.exports = {
           error: colors.deepOrange.accent4,
           success: colors.green.accent3
         }
+      }
+    }
+  },
+  firebase: {
+    config: {
+      apiKey: "AIzaSyApIJzDL5nJtIX16PffTP68HyfR1I9cWJ0",
+      authDomain: "fome-certa-app.firebaseapp.com",
+      databaseURL: "https://fome-certa-app.firebaseio.com",
+      projectId: "fome-certa-app",
+      storageBucket: "fome-certa-app.appspot.com",
+      messagingSenderId: "306617561272",
+      appId: "1:306617561272:web:44ff1022e07df15bfa044d"
+    },
+    services: {
+      auth: {
+        initialize: {
+          onAuthStateChangedAction: 'onAuthStateChanged'
+        },
+        ssr: true
+      },
+      firestore: {
+        enablePersistence: true
       }
     }
   },
