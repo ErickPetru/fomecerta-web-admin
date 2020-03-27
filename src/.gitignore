@@ -28,3 +28,9 @@ dist
 
 # macOS
 .DS_Store
+
+# Nuxt PWA service worker
+sw.*
+
+# Private config files
+private

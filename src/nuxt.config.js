@@ -1,3 +1,5 @@
+const path = require('path')
+const fs = require('fs')
 const colors = require('vuetify/es5/util/colors').default
 
 module.exports = {
@@ -64,17 +66,37 @@ module.exports = {
         initialize: {
           onAuthStateChangedAction: 'onAuthStateChanged'
         },
-        ssr: true
+        ssr: {
+          credential: '~/private/serviceAccount.json',
+
+          serverLogin: {
+            sessionLifetime: 15 * 60 * 1000 // 15 minutes
+          }
+        }
       },
       firestore: {
         enablePersistence: true
       }
     }
   },
+  pwa: {
+    meta: false,
+    icon: false,
+    workbox: {
+      importScripts: [
+        '/firebase-auth-sw.js'
+      ],
+      dev: true // Set back to false if HMR crashes...
+    }
+  },
+  server: {
+    https: process.env.NODE_ENV === 'development' ? {
+      key: fs.readFileSync(path.resolve(__dirname, 'private/localhost.key')),
+      cert: fs.readFileSync(path.resolve(__dirname, 'private/localhost.crt'))
+    } : false
+  },
   buildDir: 'nuxt',
   build: {
-    extractCSS: true,
-    extend (config, ctx) {
-    }
+    extractCSS: process.env.NODE_ENV === 'production'
   }
 }

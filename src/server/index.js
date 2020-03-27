@@ -1,3 +1,4 @@
+const https = require('https')
 const express = require('express')
 const consola = require('consola')
 const { Nuxt, Builder } = require('nuxt')
@@ -24,10 +25,13 @@ async function start () {
   app.use(nuxt.render)
 
   // Listen the server
-  app.listen(port, host)
+  https.createServer(nuxt.options.server.https, app).listen(port, host)
+
+  // Ready message
   consola.ready({
-    message: `Server listening on http://${host}:${port}`,
+    message: `Server listening on https://${host}:${port}`,
     badge: true
   })
 }
+
 start()

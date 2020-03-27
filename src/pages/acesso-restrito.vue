@@ -5,7 +5,7 @@
 
       <v-card class="elevation-12">
         <v-toolbar color="primary" flat>
-          <v-toolbar-title>Acesso à área restrita</v-toolbar-title>
+          <v-toolbar-title>{{ $metaInfo.title }}</v-toolbar-title>
         </v-toolbar>
         <v-card-text class="pa-4">
           <v-form ref="form" v-model="formValid">
@@ -62,6 +62,7 @@
 import messages, { ApplicationError } from '@/helpers/messages'
 import rules from '@/helpers/validation-rules'
 import formValidation from '@/mixins/form-validation'
+import restrictAuthenticated from '@/mixins/restrict-authenticated'
 
 export default {
   middleware: 'guest',
@@ -69,7 +70,10 @@ export default {
   components: {
     Logo: () => import('@/components/Logo.vue')
   },
-  mixins: [formValidation],
+  mixins: [
+    formValidation,
+    restrictAuthenticated
+  ],
   data () {
     return {
       loading: false,
@@ -96,19 +100,25 @@ export default {
       try {
         this.loading = true
 
-        const user = await this.$fireAuth.signInWithEmailAndPassword(
+        const { user } = await this.$fireAuth.signInWithEmailAndPassword(
           this.formData.email,
           this.formData.password
         )
 
-        if (!user.emailVerified) {
-          throw new ApplicationError('auth/email-not-verified', {
-            text: 'Reenviar',
-            callback: () => this.$router.push('/recuperar-senha')
-          })
+        if (!user) {
+          throw new ApplicationError()
         }
 
-        this.$router.push('/')
+        if (!user.emailVerified) {
+          const actionButton = {
+            text: 'Reenviar',
+            callback: this.resendEmailVerification
+          }
+
+          throw new ApplicationError('auth/email-not-verified', actionButton)
+        }
+
+        this.$snackbar.showMessage(messages['auth/success'], 'success')
       } catch (error) {
         console.error(error)
         this.$snackbar.showMessage({
@@ -116,6 +126,31 @@ export default {
           color: 'error',
           actionButton: error.details
         })
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async resendEmailVerification () {
+      try {
+        this.loading = true
+
+        const user = await this.$fireAuth.currentUser
+
+        if (!this.authUser || !user) {
+          throw new ApplicationError()
+        }
+
+        await user.sendEmailVerification({
+          url: `${window.location.origin}/acesso-restrito`
+        })
+
+        await this.$fireAuth.signOut()
+
+        this.$snackbar.showMessage(messages['auth/user-verification-sent'], 'success')
+      } catch (error) {
+        console.error(error)
+        this.$snackbar.showMessage(messages[error.code], 'error')
       } finally {
         this.loading = false
       }

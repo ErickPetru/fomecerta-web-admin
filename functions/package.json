@@ -23,6 +23,8 @@
     "vuetify-loader": "^1.4.3"
   },
   "devDependencies": {
+    "@nuxtjs/firebase": "^5.0.3",
+    "@nuxtjs/pwa": "^3.0.0-beta.20",
     "@nuxtjs/vuetify": "^1.11.0",
     "firebase-functions-test": "^0.1.6"
   }

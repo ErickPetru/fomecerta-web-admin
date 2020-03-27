@@ -6,6 +6,8 @@ const messages = {
   'auth/wrong-password': 'Não foi possível acessar com as informações fornecidas.',
   'auth/email-not-verified': 'É necessário confirmar seu cadastro acessando seu e-mail.',
   'auth/user-created': 'Operação concluída. Acesse seu e-mail para confirmar o cadastro.',
+  'auth/user-verification-sent': 'E-mail enviado. Acesse sua caixa de entrada para confirmar o cadastro.',
+  'auth/success': 'Acesso concedido, redirecionando...',
   [undefined]: 'A comunicação com o servidor não pôde ser concluída.'
 }
 

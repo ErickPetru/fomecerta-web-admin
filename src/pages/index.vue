@@ -23,12 +23,16 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
+import restrictGuests from '@/mixins/restrict-authenticated'
 
 export default {
   middleware: 'auth',
   components: {
     Logo: () => import('@/components/Logo.vue')
   },
+  mixins: [
+    restrictGuests
+  ],
   computed: {
     ...mapGetters(['isDrawerOpen'])
   },

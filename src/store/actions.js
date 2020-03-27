@@ -1,19 +1,14 @@
 export default {
-  async nuxtServerInit ({ dispatch }, context) {
-    if (this.$fireAuth === null || context.$fireAuth === null || context.app.$fireAuth === null) {
+  async nuxtServerInit ({ dispatch }, { $fireAuth, app, res }) {
+    if (this.$fireAuth === null || $fireAuth === null || app.$fireAuth === null) {
       throw new Error('$fireAuth cannot be accessed')
     }
 
-    if (context.res && context.res.locals && context.res.locals.user) {
-      const { allClaims: claims, ...authUser } = context.res.locals.user
+    const fireAuth = this.$fireAuth || $fireAuth || app.$fireAuth
+    console.log('nuxtServerInit', fireAuth.authUser)
 
-      console.info(
-        'Authenticated user verified on server-side. User: ',
-        authUser,
-        'Claims:',
-        claims
-      )
-
+    if (res && res.locals && res.locals.user) {
+      const { allClaims: claims, ...authUser } = res.locals.user
       await dispatch('onAuthStateChanged', { authUser, claims })
     }
   },

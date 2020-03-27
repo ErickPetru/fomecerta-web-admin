@@ -104,6 +104,7 @@
 import messages from '@/helpers/messages'
 import rules from '@/helpers/validation-rules'
 import formValidation from '@/mixins/form-validation'
+import restrictAuthenticated from '@/mixins/restrict-authenticated'
 
 export default {
   middleware: 'guest',
@@ -111,7 +112,10 @@ export default {
   components: {
     Logo: () => import('@/components/Logo.vue')
   },
-  mixins: [formValidation],
+  mixins: [
+    formValidation,
+    restrictAuthenticated
+  ],
   data () {
     return {
       loading: false,
@@ -195,6 +199,10 @@ export default {
 
         await user.updateProfile({
           displayName: this.formData.name
+        })
+
+        await user.sendEmailVerification({
+          url: `${window.location.origin}/acesso-restrito`
         })
 
         this.$snackbar.showMessage(messages['auth/user-created'], 'success')

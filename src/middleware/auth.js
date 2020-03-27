@@ -1,7 +1,5 @@
-export default function ({ store, route, from, redirect }) {
+export default function ({ store, app, redirect }) {
   if (!store.state.authUser || !store.state.authUser.emailVerified) {
-    if ((!route || route.path !== '/acesso-restrito') && (!from || from.path !== '/acesso-restrito')) {
-      return redirect('/acesso-restrito')
-    }
+    return redirect('/acesso-restrito')
   }
 }
