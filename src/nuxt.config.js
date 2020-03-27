@@ -22,7 +22,8 @@ module.exports = {
   css: [
   ],
   plugins: [
-    '~/plugins/snackbar.js'
+    '~/plugins/snackbar.js',
+    '~/plugins/focus.js'
   ],
   buildModules: [
     '@nuxtjs/eslint-module',
@@ -40,10 +41,10 @@ module.exports = {
           primary: colors.yellow.darken2,
           accent: colors.red.darken1,
           secondary: colors.amber.darken1,
-          info: colors.teal.lighten1,
-          warning: colors.amber.base,
-          error: colors.deepOrange.accent4,
-          success: colors.green.accent3
+          info: colors.blueGrey.darken1,
+          warning: colors.brown.base,
+          error: colors.deepOrange.darken4,
+          success: colors.green.darken4
         }
       }
     }

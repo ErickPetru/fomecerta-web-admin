@@ -1,7 +1,7 @@
 <template>
   <v-row align="center" justify="center">
     <v-col cols="12" sm="8" md="4">
-      <Logo class="logo ma-6 mt-0" />
+      <Logo class="logo" />
 
       <v-card class="elevation-12">
         <v-toolbar color="primary" flat>
@@ -10,35 +10,47 @@
         <v-card-text class="pa-4">
           <v-form ref="form" v-model="formValid">
             <v-text-field
+              ref="email"
               v-model="formData.email"
+              v-focus.lazy="isFocused('email')"
               :rules="formRules.email"
               label="E-mail"
-              prepend-icon="mdi-account"
+              prepend-icon="mdi-email-open"
               type="text"
-              autofocus
               autocomplete="off"
+              @keypress.enter="signInUser"
+              @keydown.down="setFocus('password')"
             />
             <v-text-field
+              ref="password"
               v-model="formData.password"
+              v-focus.lazy="isFocused('password')"
               :rules="formRules.password"
               label="Senha"
               prepend-icon="mdi-lock"
-              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-              :type="showPassword ? 'password' : 'text'"
+              :append-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+              :type="showPassword ? 'text' : 'password'"
               autocomplete="off"
               @click:append="() => (showPassword = !showPassword)"
+              @keypress.enter="signInUser"
+              @keydown.up="setFocus('email')"
             />
           </v-form>
         </v-card-text>
-        <v-card-actions class="flex flex-column pa-4 pt-0 pb-0">
-          <v-btn large color="primary black--text mb-4" @click="signInUser">
+        <v-card-actions class="flex flex-column pa-4 pt-0 pb-5">
+          <v-btn large depressed color="primary black--text mb-4" :loading="loading" @click="signInUser">
             <span>Entrar</span>
             <v-icon>mdi-chevron-right</v-icon>
           </v-btn>
 
-          <p class="mt-4">
+          <p class="ma-0 mt-2 font-weight-light body-2">
+            <span>Esqueceu sua senha?</span>
+            <v-btn outlined small nuxt to="/recuperar-senha" color="secondary">Enviar recuperação</v-btn>
+          </p>
+
+          <p class="ma-0 mt-2 font-weight-light body-2">
             <span>Ainda não tem uma conta?</span>
-            <v-btn nuxt text to="/novo-registro" color="secondary">Cadastre-se agora</v-btn>
+            <v-btn outlined small nuxt to="/novo-cadastro" color="secondary">Cadastrar-se agora</v-btn>
           </p>
         </v-card-actions>
       </v-card>
@@ -47,7 +59,9 @@
 </template>
 
 <script>
-import { mapState, mapGetters } from 'vuex'
+import messages, { ApplicationError } from '@/helpers/messages'
+import rules from '@/helpers/validation-rules'
+import formValidation from '@/mixins/form-validation'
 
 export default {
   middleware: 'guest',
@@ -55,46 +69,55 @@ export default {
   components: {
     Logo: () => import('@/components/Logo.vue')
   },
+  mixins: [formValidation],
   data () {
     return {
+      loading: false,
+      showPassword: false,
+      focused: 'email',
       formData: {
         email: '',
         password: ''
-      },
-      showPassword: false,
-      formValid: false,
-      formRules: {
-        email: [
-          (v) => !!v || 'É necessário informar o e-mail.',
-          (v) => /.+@.+\..+/.test(v) || 'Por favor, informe um e-mail válido.'
-        ],
-        password: [(v) => !!v || 'É necessário informar a senha.']
       }
     }
   },
   computed: {
-    ...mapState({
-      authUser: (state) => state.authUser
-    }),
-    ...mapGetters({
-      isLoggedIn: 'isLoggedIn'
-    })
+    formRules () {
+      return {
+        email: rules.email,
+        password: rules.password
+      }
+    }
   },
   methods: {
-    signInUser () {
-      this.$refs.form.validate()
-      if (!this.formValid) return
+    async signInUser () {
+      if (!this.validate()) return false
 
       try {
-        // await this.$fireAuth.signInWithEmailAndPassword(
-        //   this.formData.email,
-        //   this.formData.password
-        // )
-        this.$router.push('/')
-      } catch {
-        this.$snackbar.showMessage(
-          'A comunicação com o servidor não pôde ser concluída.'
+        this.loading = true
+
+        const user = await this.$fireAuth.signInWithEmailAndPassword(
+          this.formData.email,
+          this.formData.password
         )
+
+        if (!user.emailVerified) {
+          throw new ApplicationError('auth/email-not-verified', {
+            text: 'Reenviar',
+            callback: () => this.$router.push('/recuperar-senha')
+          })
+        }
+
+        this.$router.push('/')
+      } catch (error) {
+        console.error(error)
+        this.$snackbar.showMessage({
+          content: messages[error.code],
+          color: 'error',
+          actionButton: error.details
+        })
+      } finally {
+        this.loading = false
       }
     }
   },
@@ -105,17 +128,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.logo {
-  height: auto !important;
-}
-
-.logo ::v-deep .title {
-  fill: #fff;
-}
-
-button {
-  width: 100%;
-}
+@import url('@/assets/guest.scss');
 
 a.v-btn {
   margin: -2px 0 0 0.25em;

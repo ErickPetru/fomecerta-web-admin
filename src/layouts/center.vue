@@ -5,8 +5,18 @@
         <nuxt />
       </v-container>
     </v-content>
+
+    <Snackbar />
   </v-app>
 </template>
+
+<script>
+export default {
+  components: {
+    Snackbar: () => import('@/components/Snackbar.vue')
+  }
+}
+</script>
 
 <style lang="scss" scoped>
 #app {

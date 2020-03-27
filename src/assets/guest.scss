@@ -1,0 +1,12 @@
+.logo {
+  height: auto !important;
+  margin: 0 3.5rem 1.5rem;
+}
+
+.logo ::v-deep .title {
+  fill: #fff;
+}
+
+button.primary {
+  width: 100%;
+}

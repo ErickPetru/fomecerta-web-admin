@@ -5,6 +5,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Nuxt crash reports
+report.*
+
 # Dependency directories
 node_modules
 

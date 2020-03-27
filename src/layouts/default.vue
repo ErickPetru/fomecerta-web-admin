@@ -7,8 +7,8 @@
         </v-list-item-avatar>
 
         <v-list-item-content>
-          <v-list-item-title>Nome</v-list-item-title>
-          <v-list-item-subtitle>e-mail</v-list-item-subtitle>
+          <v-list-item-title>{{ authUser.displayName }}</v-list-item-title>
+          <v-list-item-subtitle>{{ authUser.email }}</v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
 
@@ -93,6 +93,7 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
+import messages from '@/helpers/messages'
 
 export default {
   components: {
@@ -106,17 +107,17 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['isDrawerOpen'])
+    ...mapGetters(['isDrawerOpen', 'authUser'])
   },
   methods: {
     ...mapActions(['setDrawerOpen']),
 
-    logout () {
+    async logout () {
       try {
-        // await this.$fireAuth.signOut()
+        await this.$fireAuth.signOut()
         this.$router.push('/acesso-restrito')
-      } catch {
-        this.$snackbar.showMessage('A comunicação com o servidor não pôde ser concluída.')
+      } catch (error) {
+        this.$snackbar.showMessage(messages[error.code])
       }
     }
   }

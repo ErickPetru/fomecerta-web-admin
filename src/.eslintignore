@@ -12,6 +12,3 @@ nuxt
 
 # Nuxt generate
 dist
-
-# Nuxt config
-nuxt.config.js

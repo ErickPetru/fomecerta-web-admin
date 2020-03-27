@@ -9,5 +9,9 @@ export default {
 
   isDrawerOpen (state) {
     return state.drawerOpen
+  },
+
+  authUser (state) {
+    return state.authUser
   }
 }

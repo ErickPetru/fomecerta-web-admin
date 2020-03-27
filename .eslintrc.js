@@ -17,6 +17,7 @@ module.exports = {
     'prettier'
   ],
   rules: {
+    'nuxt/no-cjs-in-config': 'off',
     'space-before-function-paren': 'warn',
     'no-console': 'off',
     'no-unused-vars': 'warn'
