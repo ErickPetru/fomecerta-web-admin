@@ -25,7 +25,8 @@ async function start () {
   app.use(nuxt.render)
 
   // Listen the server
-  https.createServer(nuxt.options.server.https, app).listen(port, host)
+  if (config.dev) https.createServer(nuxt.options.server.https, app).listen(port, host)
+  else app.listen(port, host)
 
   // Ready message
   consola.ready({

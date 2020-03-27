@@ -2,6 +2,8 @@ const path = require('path')
 const fs = require('fs')
 const colors = require('vuetify/es5/util/colors').default
 
+const isDev = process.env.NODE_ENV === 'development'
+
 module.exports = {
   mode: 'universal',
   head: {
@@ -67,7 +69,7 @@ module.exports = {
           onAuthStateChangedAction: 'onAuthStateChanged'
         },
         ssr: {
-          credential: '~/private/serviceAccount.json',
+          credential: isDev ? '~/private/serviceAccount.json' : true,
 
           serverLogin: {
             sessionLifetime: 15 * 60 * 1000 // 15 minutes
@@ -86,17 +88,17 @@ module.exports = {
       importScripts: [
         '/firebase-auth-sw.js'
       ],
-      dev: true // Set back to false if HMR crashes...
+      dev: isDev // Hard-code back to false if HMR crashes...
     }
   },
   server: {
-    https: process.env.NODE_ENV === 'development' ? {
+    https: isDev ? {
       key: fs.readFileSync(path.resolve(__dirname, 'private/localhost.key')),
       cert: fs.readFileSync(path.resolve(__dirname, 'private/localhost.crt'))
-    } : false
+    } : true
   },
   buildDir: 'nuxt',
   build: {
-    extractCSS: process.env.NODE_ENV === 'production'
+    extractCSS: !isDev
   }
 }
