@@ -38,7 +38,13 @@
           </v-form>
         </v-card-text>
         <v-card-actions class="flex flex-column pa-4 pt-0 pb-5">
-          <v-btn large depressed color="primary black--text mb-4" :loading="loading" @click="signInUser">
+          <v-btn
+            large
+            depressed
+            color="primary black--text mb-4"
+            :loading="loading"
+            @click="signInUser"
+          >
             <span>Entrar</span>
             <v-icon>mdi-chevron-right</v-icon>
           </v-btn>
@@ -70,10 +76,7 @@ export default {
   components: {
     Logo: () => import('@/components/Logo.vue')
   },
-  mixins: [
-    formValidation,
-    restrictAuthenticated
-  ],
+  mixins: [formValidation, restrictAuthenticated],
   data () {
     return {
       loading: false,
@@ -147,7 +150,10 @@ export default {
 
         await this.$fireAuth.signOut()
 
-        this.$snackbar.showMessage(messages['auth/user-verification-sent'], 'success')
+        this.$snackbar.showMessage(
+          messages['auth/user-verification-sent'],
+          'success'
+        )
       } catch (error) {
         console.error(error)
         this.$snackbar.showMessage(messages[error.code], 'error')

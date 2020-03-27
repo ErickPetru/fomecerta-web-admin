@@ -4,9 +4,6 @@ export default {
       throw new Error('$fireAuth cannot be accessed')
     }
 
-    const fireAuth = this.$fireAuth || $fireAuth || app.$fireAuth
-    console.log('nuxtServerInit', fireAuth.authUser)
-
     if (res && res.locals && res.locals.user) {
       const { allClaims: claims, ...authUser } = res.locals.user
       await dispatch('onAuthStateChanged', { authUser, claims })

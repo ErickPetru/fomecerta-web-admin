@@ -21,7 +21,7 @@
               label="Nome completo"
               prepend-icon="mdi-account"
               type="text"
-              autocomplete="new-password"
+              autocomplete="off"
               @keypress.enter="createUser"
               @keydown.down="setFocus('email')"
             />
@@ -112,10 +112,7 @@ export default {
   components: {
     Logo: () => import('@/components/Logo.vue')
   },
-  mixins: [
-    formValidation,
-    restrictAuthenticated
-  ],
+  mixins: [formValidation, restrictAuthenticated],
   data () {
     return {
       loading: false,
