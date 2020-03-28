@@ -29,7 +29,8 @@ dist
 # macOS
 .DS_Store
 
-# Nuxt PWA service worker
+# Nuxt and Firebase PWA service worker
+firebase-auth-sw.js
 sw.*
 
 # Private config files

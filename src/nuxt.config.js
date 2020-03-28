@@ -24,6 +24,7 @@ module.exports = {
   },
   loading: { color: '#fff' },
   css: [
+    '~/assets/global.scss'
   ],
   plugins: [
     '~/plugins/snackbar.js',
@@ -34,7 +35,8 @@ module.exports = {
     '@nuxtjs/vuetify'
   ],
   modules: [
-    '@nuxtjs/firebase'
+    '@nuxtjs/firebase',
+    '@nuxtjs/pwa'
   ],
   vuetify: {
     customVariables: ['~/assets/variables.scss'],
@@ -44,7 +46,7 @@ module.exports = {
         light: {
           primary: colors.yellow.darken2,
           accent: colors.red.darken1,
-          secondary: colors.amber.darken1,
+          secondary: colors.amber.base,
           info: colors.blueGrey.darken1,
           warning: colors.brown.base,
           error: colors.deepOrange.darken4,
@@ -69,7 +71,7 @@ module.exports = {
           onAuthStateChangedAction: 'onAuthStateChanged'
         },
         ssr: {
-          credential: isDev ? '~/private/serviceAccount.json' : true,
+          // credential: isDev ? '~/private/serviceAccount.json' : true,
 
           serverLogin: {
             sessionLifetime: 15 * 60 * 1000 // 15 minutes
@@ -77,8 +79,11 @@ module.exports = {
         }
       },
       firestore: {
-        enablePersistence: true
-      }
+        enablePersistence: {
+          synchronizeTabs: true
+        }
+      },
+      storage: true
     }
   },
   pwa: {
@@ -88,7 +93,9 @@ module.exports = {
       importScripts: [
         '/firebase-auth-sw.js'
       ],
-      dev: isDev // Hard-code back to false if HMR crashes...
+      dev: isDev, // Hard-code back to false if HMR crashes...
+      debug: isDev,
+      publicPath: '/nuxt'
     }
   },
   server: {

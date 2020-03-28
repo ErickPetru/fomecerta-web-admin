@@ -1,16 +1,16 @@
 <template>
   <v-row align="center" justify="center">
-    <v-col cols="12" sm="8" md="4">
+    <v-col cols="12" sm="8" md="6" lg="4">
       <Logo class="logo" />
 
-      <v-card class="elevation-12">
+      <v-card class="elevation-12" :loading="loading">
         <v-toolbar color="primary" flat>
           <v-btn icon nuxt to="/acesso-restrito" class="ma-0 mr-2">
             <v-icon>mdi-chevron-left</v-icon>
           </v-btn>
-
           <v-toolbar-title class="pa-0">{{ $metaInfo.title }}</v-toolbar-title>
         </v-toolbar>
+
         <v-card-text class="pa-4">
           <v-form ref="form" v-model="formValid">
             <v-text-field
@@ -25,6 +25,7 @@
               @keypress.enter="createUser"
               @keydown.down="setFocus('email')"
             />
+
             <v-text-field
               ref="email"
               v-model="formData.email"
@@ -38,6 +39,7 @@
               @keydown.up="setFocus('name')"
               @keydown.down="setFocus('password')"
             />
+
             <v-text-field
               ref="password"
               v-model="formData.password"
@@ -47,7 +49,7 @@
               prepend-icon="mdi-lock"
               :append-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
               :type="showPassword ? 'text' : 'password'"
-              autocomplete="off"
+              autocomplete="new-password"
               :loading="passwordStrength !== null"
               @click:append="() => (showPassword = !showPassword)"
               @keypress.enter="createUser"
@@ -68,6 +70,7 @@
                 </v-progress-linear>
               </template>
             </v-text-field>
+
             <v-text-field
               ref="confirm"
               v-model="formData.confirm"
@@ -77,13 +80,14 @@
               prepend-icon="mdi-lock"
               :append-icon="showConfirm ? 'mdi-eye-off' : 'mdi-eye'"
               :type="showConfirm ? 'text' : 'password'"
-              autocomplete="off"
+              autocomplete="new-password"
               @click:append="() => (showConfirm = !showConfirm)"
               @keypress.enter="createUser"
               @keydown.up="setFocus('password')"
             />
           </v-form>
         </v-card-text>
+
         <v-card-actions class="flex flex-column pa-4 pt-0 pb-0">
           <v-btn
             large
@@ -92,6 +96,7 @@
             :loading="loading"
             @click="createUser"
           >
+            <v-icon class="ma-0 mr-2 text--secondary">mdi-check-circle</v-icon>
             <span>Confirmar cadastro</span>
           </v-btn>
         </v-card-actions>
@@ -107,6 +112,7 @@ import formValidation from '@/mixins/form-validation'
 import restrictAuthenticated from '@/mixins/restrict-authenticated'
 
 export default {
+  name: 'PageSignUp',
   middleware: 'guest',
   layout: 'center',
   components: {
@@ -138,48 +144,7 @@ export default {
     },
 
     passwordStrength () {
-      if (this.formData.password === '') {
-        return null
-      }
-
-      let index = 0
-      const colors = ['red', 'deep-orange', 'amber', 'lime', 'green']
-      const levels = ['Muito fraca', 'Fraca', 'Média', 'Forte', 'Muito forte']
-
-      // Password length lower than 7.
-      if (this.formData.password.length < 7) {
-        return {
-          value: 1,
-          color: colors[index],
-          level: levels[index]
-        }
-      }
-
-      // Password contains uppercase letters.
-      if (/[A-Z]/.test(this.formData.password)) index += 0.75
-
-      // Password contains lowercase letters.
-      if (/[a-z]/.test(this.formData.password)) index += 0.75
-
-      // Password contains numbers.
-      if (/\d/.test(this.formData.password)) index += 0.75
-
-      // Password contains special characters.
-      if (/[!-/:-@[-`{-~]/.test(this.formData.password)) index++
-
-      // Password length greater than 9.
-      if (this.formData.password.length > 9) index++
-
-      index = index > 4 ? 4 : Math.floor(index)
-
-      let value = Math.ceil((index + 1) * 16.6)
-      value = value > 80 ? 100 : value > 50 ? 75 : value
-
-      return {
-        value,
-        color: colors[index],
-        level: levels[index]
-      }
+      return rules.passwordStrength(this.formData.password)
     }
   },
   methods: {

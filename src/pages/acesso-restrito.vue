@@ -1,12 +1,13 @@
 <template>
   <v-row align="center" justify="center">
-    <v-col cols="12" sm="8" md="4">
+    <v-col cols="12" sm="8" md="6" lg="4">
       <Logo class="logo" />
 
-      <v-card class="elevation-12">
+      <v-card class="elevation-12" :loading="loading">
         <v-toolbar color="primary" flat>
           <v-toolbar-title>{{ $metaInfo.title }}</v-toolbar-title>
         </v-toolbar>
+
         <v-card-text class="pa-4">
           <v-form ref="form" v-model="formValid">
             <v-text-field
@@ -21,6 +22,7 @@
               @keypress.enter="signInUser"
               @keydown.down="setFocus('password')"
             />
+
             <v-text-field
               ref="password"
               v-model="formData.password"
@@ -37,6 +39,7 @@
             />
           </v-form>
         </v-card-text>
+
         <v-card-actions class="flex flex-column pa-4 pt-0 pb-5">
           <v-btn
             large
@@ -46,7 +49,7 @@
             @click="signInUser"
           >
             <span>Entrar</span>
-            <v-icon>mdi-chevron-right</v-icon>
+            <v-icon class="text--secondary">mdi-chevron-right</v-icon>
           </v-btn>
 
           <p class="ma-0 mt-2 font-weight-light body-2">
@@ -71,6 +74,7 @@ import formValidation from '@/mixins/form-validation'
 import restrictAuthenticated from '@/mixins/restrict-authenticated'
 
 export default {
+  name: 'PageLogin',
   middleware: 'guest',
   layout: 'center',
   components: {
@@ -129,7 +133,7 @@ export default {
           color: 'error',
           actionButton: error.details
         })
-      } finally {
+
         this.loading = false
       }
     },

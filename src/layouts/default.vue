@@ -1,13 +1,13 @@
 <template>
   <v-app id="app">
-    <v-navigation-drawer :value="isDrawerOpen" fixed app color="secondary">
-      <v-list-item two-line>
+    <v-navigation-drawer :value="isDrawerOpen" fixed app color="primary">
+      <v-list-item v-if="authUser" two-line>
         <v-list-item-avatar>
           <img src="/cropped-icon-site-32x32.png" />
         </v-list-item-avatar>
 
         <v-list-item-content>
-          <v-list-item-title>{{ authUser.displayName }}</v-list-item-title>
+          <v-list-item-title v-if="authUser.displayName">{{ authUser.displayName }}</v-list-item-title>
           <v-list-item-subtitle>{{ authUser.email }}</v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
@@ -96,6 +96,7 @@ import { mapActions, mapGetters } from 'vuex'
 import messages from '@/helpers/messages'
 
 export default {
+  name: 'LayoutDefault',
   components: {
     Logo: () => import('@/components/Logo.vue'),
     Snackbar: () => import('@/components/Snackbar.vue')

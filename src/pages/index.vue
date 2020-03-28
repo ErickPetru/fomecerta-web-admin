@@ -8,11 +8,11 @@
             <Logo class="ml-2" />!
           </v-card-title>
           <v-card-text>
-            <p>Em breve, teremos conteúdo na página inicial.</p>
+            <p>Em breve, teremos cartões de acesso rápido nesta página inicial.</p>
 
             <p>
               Por enquanto, utilize o
-              <a href="/menu" @click.prevent="showDrawer">menu à direita</a> para navegar.
+              <a href="/menu" @click.prevent="showDrawer">menu lateral</a> para navegar.
             </p>
           </v-card-text>
         </v-card>
@@ -26,6 +26,7 @@ import { mapActions, mapGetters } from 'vuex'
 import restrictGuests from '@/mixins/restrict-authenticated'
 
 export default {
+  name: 'PageHome',
   middleware: 'auth',
   components: {
     Logo: () => import('@/components/Logo.vue')

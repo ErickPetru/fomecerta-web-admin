@@ -11,11 +11,12 @@ const nuxt = new Nuxt({
 })
 
 let isReady = false
-const readyPromise = nuxt.ready().then(() => isReady = true).catch(() => process.exit(1))
+const readyPromise = nuxt.ready().then(() => (isReady = true)).catch(() => process.exit(1))
 
-async function handleRequest(req, res) {
+async function handleRequest (req, res) {
   if (!isReady) await readyPromise
-  res.set('Cache-Control', 'public, max-age=1, s-maxage=1')
+  // res.set('Cache-Control', 'public, max-age=1, s-maxage=1')
+  res.setHeader('Cache-Control', 'private')
   await nuxt.render(req, res)
 }
 

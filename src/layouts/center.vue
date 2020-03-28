@@ -12,6 +12,7 @@
 
 <script>
 export default {
+  name: 'LayoutCenter',
   components: {
     Snackbar: () => import('@/components/Snackbar.vue')
   }

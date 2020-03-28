@@ -41,6 +41,7 @@
 
 <script>
 export default {
+  name: 'LayoutError',
   layout: 'center',
   props: {
     error: {
