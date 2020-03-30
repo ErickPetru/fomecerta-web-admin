@@ -56,7 +56,7 @@
               @keydown.up="setFocus('email')"
               @keydown.down="setFocus('confirm')"
             >
-              <template v-slot:progress>
+              <template #progress>
                 <v-progress-linear
                   :value="passwordStrength.value"
                   :color="passwordStrength.color"
@@ -106,7 +106,7 @@
 </template>
 
 <script>
-import messages from '@/helpers/messages'
+import { getMessage } from '@/helpers/messages'
 import rules from '@/helpers/validation-rules'
 import formValidation from '@/mixins/form-validation'
 import restrictAuthenticated from '@/mixins/restrict-authenticated'
@@ -167,11 +167,13 @@ export default {
           url: `${window.location.origin}/acesso-restrito`
         })
 
-        this.$snackbar.showMessage(messages['auth/user-created'], 'success')
+        await this.$fireAuth.signOut()
+
+        this.$snackbar.showMessage(getMessage('auth/user-created'), 'success')
         this.$router.push('/acesso-restrito')
       } catch (error) {
         console.error(error)
-        this.$snackbar.showMessage(messages[error.code], 'error')
+        this.$snackbar.showMessage(getMessage(error), 'error')
       } finally {
         this.loading = false
       }

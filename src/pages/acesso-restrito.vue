@@ -54,12 +54,26 @@
 
           <p class="ma-0 mt-2 font-weight-light body-2">
             <span>Esqueceu sua senha?</span>
-            <v-btn outlined small nuxt to="/recuperar-senha" color="secondary">Enviar recuperação</v-btn>
+            <v-btn
+              outlined
+              small
+              nuxt
+              to="/recuperar-senha"
+              color="secondary"
+              @click="$fireAuth.signOut()"
+            >Enviar recuperação</v-btn>
           </p>
 
           <p class="ma-0 mt-2 font-weight-light body-2">
             <span>Ainda não tem uma conta?</span>
-            <v-btn outlined small nuxt to="/novo-cadastro" color="secondary">Cadastrar-se agora</v-btn>
+            <v-btn
+              outlined
+              small
+              nuxt
+              to="/novo-cadastro"
+              color="secondary"
+              @click="$fireAuth.signOut()"
+            >Cadastrar-se agora</v-btn>
           </p>
         </v-card-actions>
       </v-card>
@@ -68,7 +82,7 @@
 </template>
 
 <script>
-import messages, { ApplicationError } from '@/helpers/messages'
+import { getMessage, ApplicationError } from '@/helpers/messages'
 import rules from '@/helpers/validation-rules'
 import formValidation from '@/mixins/form-validation'
 import restrictAuthenticated from '@/mixins/restrict-authenticated'
@@ -125,15 +139,16 @@ export default {
           throw new ApplicationError('auth/email-not-verified', actionButton)
         }
 
-        this.$snackbar.showMessage(messages['auth/success'], 'success')
+        this.$snackbar.showMessage(getMessage('auth/success'), 'success')
       } catch (error) {
         console.error(error)
         this.$snackbar.showMessage({
-          content: messages[error.code],
+          content: getMessage(error),
           color: 'error',
           actionButton: error.details
         })
 
+        await this.$fireAuth.signOut()
         this.loading = false
       }
     },
@@ -142,9 +157,12 @@ export default {
       try {
         this.loading = true
 
-        const user = await this.$fireAuth.currentUser
+        const { user } = await this.$fireAuth.signInWithEmailAndPassword(
+          this.formData.email,
+          this.formData.password
+        )
 
-        if (!this.authUser || !user) {
+        if (!user) {
           throw new ApplicationError()
         }
 
@@ -155,12 +173,13 @@ export default {
         await this.$fireAuth.signOut()
 
         this.$snackbar.showMessage(
-          messages['auth/user-verification-sent'],
+          getMessage('auth/user-verification-sent'),
           'success'
         )
       } catch (error) {
         console.error(error)
-        this.$snackbar.showMessage(messages[error.code], 'error')
+        this.$snackbar.showMessage(getMessage(error), 'error')
+        await this.$fireAuth.signOut()
       } finally {
         this.loading = false
       }

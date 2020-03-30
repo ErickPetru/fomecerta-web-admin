@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import messages from '@/helpers/messages'
+import { getMessage } from '@/helpers/messages'
 import rules from '@/helpers/validation-rules'
 import formValidation from '@/mixins/form-validation'
 import restrictAuthenticated from '@/mixins/restrict-authenticated'
@@ -85,16 +85,16 @@ export default {
           url: `${window.location.origin}/acesso-restrito`
         })
 
-        await await this.$fireAuth.logOut()
+        await this.$fireAuth.logOut()
 
         this.$snackbar.showMessage(
-          messages['auth/password-reset-sent'],
+          getMessage('auth/password-reset-sent'),
           'success'
         )
         this.$router.push('/acesso-restrito')
       } catch (error) {
         console.error(error)
-        this.$snackbar.showMessage(messages[error.code], 'error')
+        this.$snackbar.showMessage(getMessage(error), 'error')
       } finally {
         this.loading = false
       }

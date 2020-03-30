@@ -1,6 +1,6 @@
 export default {
   required: [
-    (value) => !!value || 'É necessário preencher este campo.'
+    (value) => (!!value && !!value.length) || 'É necessário preencher este campo.'
   ],
   fullName: [
     (value) => !!value || 'É necessário informar seu nome.',

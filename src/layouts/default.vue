@@ -25,7 +25,7 @@
       </v-list>
 
       <v-divider />
-      <v-subheader class="caption">Dados gerais</v-subheader>
+      <v-subheader class="caption">Configurações</v-subheader>
 
       <v-list>
         <v-list-item to="/estabelecimento" router exact>
@@ -61,7 +61,7 @@
         </v-list-item>
       </v-list>
 
-      <template v-slot:append>
+      <template #append>
         <v-divider />
         <v-list-item href="acesso-restrito" @click.prevent="logout">
           <v-list-item-action>
