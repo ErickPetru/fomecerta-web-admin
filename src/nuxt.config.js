@@ -5,14 +5,14 @@ const colors = require('vuetify/es5/util/colors').default
 const isDev = process.env.NODE_ENV === 'development'
 
 module.exports = {
-  mode: 'universal',
+  mode: 'spa',
   head: {
     titleTemplate: '%s - FomeCerta',
-    title: 'FomeCerta',
+    title: 'FomeCerta - O aplicativo certo para sua fome!',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: process.env.npm_package_description || '' },
+      { hid: 'description', name: 'description', content: 'O aplicativo certo para sua fome!' },
       { name: 'msapplication-TileImage', content: '/cropped-icon-site-270x270.png' }
     ],
     link: [
@@ -36,10 +36,18 @@ module.exports = {
   ],
   modules: [
     '@nuxtjs/firebase',
-    '@nuxtjs/pwa'
+    '@nuxtjs/pwa',
+    ['vue-currency-input/nuxt', {
+      globalOptions: {
+        currency: 'BRL',
+        locale: 'pt-BR',
+        autoDecimalMode: true
+      }
+    }]
   ],
   vuetify: {
     customVariables: ['~/assets/variables.scss'],
+    treeShake: true,
     theme: {
       dark: false,
       themes: {
@@ -65,18 +73,20 @@ module.exports = {
       messagingSenderId: "306617561272",
       appId: "1:306617561272:web:44ff1022e07df15bfa044d"
     },
+    onFirebaseHosting: !isDev,
     services: {
       auth: {
         initialize: {
           onAuthStateChangedAction: 'onAuthStateChanged'
         },
-        ssr: {
-          // credential: isDev ? '~/private/serviceAccount.json' : true,
+        ssr: false
+        // ssr: {
+        //   credential: '~/private/serviceAccount.json',
 
-          serverLogin: {
-            sessionLifetime: 15 * 60 * 1000 // 15 minutes
-          }
-        }
+        //   serverLogin: {
+        //     sessionLifetime: 15 * 60 * 1000 // 15 minutes
+        //   }
+        // }
       },
       firestore: {
         enablePersistence: {
