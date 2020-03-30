@@ -3,6 +3,14 @@
   font-size: .875rem;
 }
 
+.v-stepper__content .v-stepper__wrapper {
+  padding: 0 64px 0 32px;
+}
+
+.v-stepper__step .v-stepper__step__step .v-icon.v-icon {
+  font-size: .875rem;
+}
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus textarea:-webkit-autofill,
@@ -10,5 +18,5 @@ textarea:-webkit-autofill:hover textarea:-webkit-autofill:focus,
 select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0px 1000px #ffecb3ff inset !important;
+  box-shadow: 0 0 0px 1000px #ffecb3ff inset !important;
 }
