@@ -2,7 +2,7 @@
   <v-container fluid>
     <v-row justify="center">
       <v-col cols="12" sm="10" md="8" xl="6">
-        <v-card :loading="loading">
+        <v-card :loading="loading" class="float-over-expanded">
           <v-toolbar color="primary" flat>
             <v-btn icon nuxt to="/" class="ma-0 mr-2">
               <v-icon>mdi-chevron-left</v-icon>
@@ -74,10 +74,10 @@
                     </v-row>
                   </div>
 
-                  <div class="mt-2">
+                  <div>
                     <v-btn
                       color="primary black--text"
-                      class="mr-2 pl-6 pr-6"
+                      class="pl-4 pr-4 mt-2"
                       :loading="loading"
                       @click="save"
                     >
@@ -130,11 +130,10 @@
                     />
                   </div>
 
-                  <div class="mt-2">
+                  <div>
                     <v-btn
-                      depressed
                       color="primary black--text"
-                      class="pl-6 pr-6"
+                      class="pl-4 pr-4 mt-2 mr-2"
                       :loading="loading"
                       @click="save"
                     >
@@ -142,7 +141,7 @@
                       <span>Confirmar</span>
                     </v-btn>
 
-                    <v-btn text class="pl-6 pr-6" @click="recoverImageAndGoBack">
+                    <v-btn text class="pl-4 pr-4 mt-2" @click="recoverImageAndGoBack">
                       <v-icon class="ma-0 mr-2 text--secondary">mdi-chevron-left</v-icon>
                       <span>Voltar</span>
                     </v-btn>
@@ -158,7 +157,11 @@
               <v-stepper-content :step="3" class="pb-2">
                 <v-form ref="formActiveDays" v-model.lazy="formActiveDaysValid" class="ml-n8">
                   <v-list class="active-days pt-1">
-                    <v-list-item v-for="day of formData.activeDays" :key="day.day" class="pl-0">
+                    <v-list-item
+                      v-for="day of formData.activeDays"
+                      :key="day.day"
+                      class="pl-0 flex-wrap"
+                    >
                       <v-list-item-action class="flex-row align-center mt-1 mb-1">
                         <span class="mt-3 mb-3 mr-2 font-weight-medium">{{ day.fullName }}:</span>
                         <v-switch
@@ -168,8 +171,8 @@
                           class="ma-1"
                         />
                       </v-list-item-action>
-                      <v-list-item-content class="pt-1 pb-1">
-                        <v-row v-if="day.active" align="center" class="ma-0">
+                      <v-list-item-content class="pt-1 pb-1 flex-nowrap">
+                        <v-row v-if="day.active" align="center" class="ma-0 flex-nowrap flex-row">
                           <v-col cols="5" class="pa-0">
                             <v-combobox
                               v-model="day.timeStart"
@@ -221,11 +224,10 @@
                     </v-list-item>
                   </v-list>
 
-                  <div class="mt-2">
+                  <div>
                     <v-btn
-                      depressed
                       color="primary black--text"
-                      class="pl-6 pr-6"
+                      class="pl-4 pr-4 mt-2 mr-2"
                       :loading="loading"
                       @click="save"
                     >
@@ -233,7 +235,7 @@
                       <span>Confirmar</span>
                     </v-btn>
 
-                    <v-btn text class="pl-6 pr-6" @click="stepper = 2">
+                    <v-btn text class="pl-4 pr-4 mt-2" @click="stepper = 2">
                       <v-icon class="ma-0 mr-2 text--secondary">mdi-chevron-left</v-icon>
                       <span>Voltar</span>
                     </v-btn>
@@ -389,36 +391,31 @@ export default {
       try {
         this.loading = true
 
-        const activeDays = this.formData.activeDays
-          .filter((item) => !!item.active)
-          .map((item) => ({
-            day: item.day,
-            timeStart: item.timeStart,
-            timeEnd: item.timeEnd || null
-          }))
-
-        const data = {
-          name: this.formData.name || null,
-          types: this.formData.types.length ? this.formData.types : null,
-          deliveryEnabled: this.formData.deliveryEnabled,
-          deliveryPrice: this.deliveryPrice,
-          activeDays
-        }
-
         const ref = this.$fireStore
           .collection('establishments')
           .doc(this.authUser.uid)
 
         const doc = await ref.get()
+
+        const data = {}
         if (doc.exists) {
           data.updatedAt = this.$fireStoreObj.Timestamp.now()
         } else {
           data.createdAt = this.$fireStoreObj.Timestamp.now()
         }
 
-        if (this.formData.imageFile) {
+        if (this.stepper === 1) {
+          data.name = this.formData.name || null
+          data.types = this.formData.types.length ? this.formData.types : null
+          data.deliveryEnabled = this.formData.deliveryEnabled
+          data.deliveryPrice = this.deliveryPrice
+
+          await ref.set(data, { merge: true })
+        } else if (this.stepper === 2 && this.formData.imageFile) {
           if (this.formData.imageFile === 'delete') {
-            const storage = this.$fireStorage.ref(`establishments/${doc.id}_1024x1024`)
+            const storage = this.$fireStorage.ref(
+              `establishments/${doc.id}_1024x1024`
+            )
             await storage.delete()
             data.imageURL = null
           } else {
@@ -431,9 +428,19 @@ export default {
           this.imageURL = data.imageURL
           this.formData.imageFile = null
           this.$refs.formImage.resetValidation()
-        }
 
-        await ref.set(data, { merge: true })
+          await ref.set(data, { merge: true })
+        } else if (this.stepper === 3) {
+          data.activeDays = this.formData.activeDays
+            .filter((item) => !!item.active)
+            .map((item) => ({
+              day: item.day,
+              timeStart: item.timeStart,
+              timeEnd: item.timeEnd || null
+            }))
+
+          await ref.set(data, { merge: true })
+        }
 
         if (this.stepper < 3) this.stepper++
         this.$snackbar.showMessage(getMessage('save-success'), 'success')
@@ -477,8 +484,12 @@ export default {
     width: 13.5rem;
   }
 
-  .v-list-item__content .col {
-    max-width: 8rem;
+  .v-list-item__content {
+    overflow: initial;
+
+    .col {
+      max-width: 8rem;
+    }
   }
 }
 </style>

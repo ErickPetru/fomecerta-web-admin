@@ -74,7 +74,15 @@
       </template>
     </v-navigation-drawer>
 
-    <v-app-bar fixed app dark color="accent">
+    <v-app-bar
+      color="accent"
+      dark
+      app
+      :flat="!isHome"
+      :extended="!isHome"
+      :extension-height="extensionHeight"
+      class="flex-grow-0"
+    >
       <v-app-bar-nav-icon @click.stop="setDrawerOpen(!isDrawerOpen)" />
       <v-toolbar-title class="pl-1">
         <v-btn nuxt text to="/" class="logo pa-2">
@@ -108,7 +116,24 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['isDrawerOpen', 'authUser'])
+    ...mapGetters(['isDrawerOpen', 'authUser']),
+
+    isHome () {
+      return this.$route.path === '/'
+    },
+
+    extensionHeight () {
+      if (this.isHome) return null
+
+      if (
+        this.$vuetify.breakpoint.name === 'xs' ||
+        this.$vuetify.breakpoint.name === 'sm'
+      ) {
+        return 60
+      } else {
+        return 70
+      }
+    }
   },
   methods: {
     ...mapActions(['setDrawerOpen']),

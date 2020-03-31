@@ -1,3 +1,16 @@
+@import '~vuetify/src/styles/styles.sass';
+
+.v-card.float-over-expanded {
+  margin-top: -80px;
+  z-index: 5;
+}
+
+@media #{map-get($display-breakpoints, 'md-and-up')} {
+  .v-card.float-over-expanded {
+    margin-top: -88px;
+  }
+}
+
 .v-input--switch .v-label {
   margin-left: .5rem;
   font-size: .875rem;
