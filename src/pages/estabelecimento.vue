@@ -30,7 +30,7 @@
                       type="text"
                       autocomplete="off"
                       class="pb-2"
-                      @keypress.enter="saveGeneral"
+                      @keypress.enter="save"
                     />
 
                     <v-select
@@ -45,7 +45,7 @@
                       class="pb-2"
                       item-value="id"
                       item-text="name"
-                      @keypress.enter="saveGeneral"
+                      @keypress.enter="save"
                     />
                   </div>
 
@@ -68,7 +68,7 @@
                         hint="Informe o preço fixo para entrega."
                         persistent-hint
                         autocomplete="off"
-                        @keypress.enter="saveGeneral"
+                        @keypress.enter="save"
                       />
                       <v-text-field v-else label="Preço por entrega" disabled />
                     </v-row>
@@ -96,10 +96,10 @@
               <v-stepper-content :step="2">
                 <v-form ref="formImage" v-model="formImageValid" class="pb-4">
                   <v-card
-                    v-if="!formData.imageFile && imageURL"
+                    v-if="!formData.imageFile && formData.imageURL"
                     class="grey lighten-3 elevation-0 mb-4"
                   >
-                    <v-img :src="imageURL" max-height="180" aspect-ratio="1" contain />
+                    <v-img :src="formData.imageURL" max-height="180" aspect-ratio="1" contain />
 
                     <v-btn
                       fab
@@ -121,10 +121,12 @@
                   <div v-else>
                     <v-file-input
                       v-model="formData.imageFile"
+                      label="Arquivo de imagem"
+                      hint="Dica: imagens com aproximadamente 1000px de largura para melhores resultados."
+                      persistent-hint
+                      :rules="formRules.imageFile"
                       show-size
                       truncate-length="50"
-                      label="Arquivo de imagem"
-                      :rules="formRules.imageFile"
                       accept="image/*"
                       class="pt-2"
                     />
@@ -133,7 +135,7 @@
                   <div>
                     <v-btn
                       color="primary black--text"
-                      class="pl-4 pr-4 mt-2 mr-2"
+                      class="pl-4 pr-4 mt-4 mr-2"
                       :loading="loading"
                       @click="save"
                     >
@@ -141,7 +143,7 @@
                       <span>Confirmar</span>
                     </v-btn>
 
-                    <v-btn text class="pl-4 pr-4 mt-2" @click="recoverImageAndGoBack">
+                    <v-btn text class="pl-4 pr-4 mt-4" @click="recoverImageAndGoBack">
                       <v-icon class="ma-0 mr-2 text--secondary">mdi-chevron-left</v-icon>
                       <span>Voltar</span>
                     </v-btn>
@@ -183,6 +185,7 @@
                               hide-details
                               filled
                               dense
+                              @keypress.enter="save"
                             >
                               <template
                                 #item="{ item }"
@@ -204,6 +207,7 @@
                                 hide-details
                                 filled
                                 dense
+                                @keypress.enter="save"
                               >
                                 <template #item="{ item }">
                                   <span class="body-2">{{ item }}</span>
@@ -289,12 +293,12 @@ export default {
   name: 'PageEstablishment',
   middleware: 'auth',
   mixins: [restrictGuests],
-  async asyncData ({ app }) {
+  async asyncData ({ app, store }) {
     const establishmentTypes = await getEstablishmentTypes(app.$fireStore)
 
     const establishment = await getEstablishment(
       app.$fireStore,
-      app.store.state.authUser
+      store.state.authUser
     )
 
     const weekdays = [
@@ -335,11 +339,11 @@ export default {
         name: establishment ? establishment.name : '',
         types: establishment ? establishment.types : '',
         imageFile: null,
+        imageURL: establishment ? establishment.imageURL : '',
         deliveryEnabled: establishment ? establishment.deliveryEnabled : false,
         deliveryPrice: establishment ? establishment.deliveryPrice : '',
         activeDays
-      },
-      imageURL: establishment ? establishment.imageURL : ''
+      }
     }
   },
   data () {
@@ -425,7 +429,7 @@ export default {
             data.imageURL = downloadURL.split('?').join('_1024x1024?')
           }
 
-          this.imageURL = data.imageURL
+          this.formData.imageURL = data.imageURL
           this.formData.imageFile = null
           this.$refs.formImage.resetValidation()
 
