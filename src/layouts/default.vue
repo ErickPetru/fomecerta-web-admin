@@ -1,6 +1,6 @@
 <template>
   <v-app id="app">
-    <v-navigation-drawer :value="isDrawerOpen" fixed app color="primary">
+    <v-navigation-drawer v-model="isDrawerOpen" fixed app color="primary">
       <v-list-item v-if="authUser" two-line>
         <v-list-item-avatar>
           <img src="/cropped-icon-site-32x32.png" />
@@ -116,7 +116,17 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['isDrawerOpen', 'authUser']),
+    ...mapGetters(['authUser']),
+
+    isDrawerOpen: {
+      get () {
+        return this.$store.getters.isDrawerOpen
+      },
+
+      set (value) {
+        this.setDrawerOpen(value)
+      }
+    },
 
     isHome () {
       return this.$route.path === '/'
