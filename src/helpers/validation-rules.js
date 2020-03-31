@@ -8,6 +8,10 @@ export default {
       /([\w]{3,})+\s+([\w]{3,})+/i.test(value) ||
       'Preencha com todos os seus nomes e sobrenomes.'
   ],
+  singleImageUpload: [
+    (value) => !!value || 'É necessário preencher este campo.',
+    (value) => !value || value.size < 2000000 || 'O arquivo selecionado deve ter um tamanho máximo de 2 MB.'
+  ],
   email: [
     (value) => !!value || 'É necessário informar seu e-mail.',
     (value) => /.+@.+\..+/.test(value) || 'Por favor, informe um e-mail válido.'

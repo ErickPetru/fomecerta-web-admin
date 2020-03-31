@@ -12,14 +12,14 @@
 
           <v-card-text class="pa-0">
             <v-stepper v-model="stepper" vertical>
-              <v-stepper-step :complete="stepper > 1" step="1" editable>
+              <v-stepper-step :complete="stepper > 1" :step="1" editable>
                 <span>Informações gerais</span>
                 <small>Preencha com as informações gerais do estabelecimento</small>
               </v-stepper-step>
 
-              <v-stepper-content step="1">
+              <v-stepper-content :step="1">
                 <v-form ref="formGeneral" v-model.lazy="formGeneralValid" class="pb-4">
-                  <div class="pa-0 pt-0 pb-0">
+                  <div>
                     <v-text-field
                       ref="name"
                       v-model="formData.name"
@@ -88,20 +88,53 @@
                 </v-form>
               </v-stepper-content>
 
-              <v-stepper-step :complete="stepper > 2" step="2" :editable="formGeneralValid">
+              <v-stepper-step :complete="stepper > 2" :step="2" :editable="formGeneralValid">
                 <span>Logomarca</span>
                 <small>Escolha a imagem com a logomarca de seu negócio</small>
               </v-stepper-step>
 
-              <v-stepper-content step="2">
-                <v-form ref="formImage" v-model="formImageValid">
-                  <div>Futuramente...</div>
+              <v-stepper-content :step="2">
+                <v-form ref="formImage" v-model="formImageValid" class="pb-4">
+                  <v-card
+                    v-if="!formData.imageFile && imageURL"
+                    class="grey lighten-3 elevation-0 mb-4"
+                  >
+                    <v-img :src="imageURL" max-height="180" aspect-ratio="1" contain />
+
+                    <v-btn
+                      fab
+                      absolute
+                      small
+                      bottom
+                      right
+                      color="accent"
+                      @click="markImageToDelete"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </v-card>
+
+                  <v-alert v-else-if="formData.imageFile === 'delete'" type="warning">
+                    <span>Confirme para remover definitivamente esta imagem.</span>
+                  </v-alert>
+
+                  <div v-else>
+                    <v-file-input
+                      v-model="formData.imageFile"
+                      show-size
+                      truncate-length="50"
+                      label="Arquivo de imagem"
+                      :rules="formRules.imageFile"
+                      accept="image/*"
+                      class="pt-2"
+                    />
+                  </div>
 
                   <div class="mt-2">
                     <v-btn
                       depressed
                       color="primary black--text"
-                      class="mb-4 pl-6 pr-6"
+                      class="pl-6 pr-6"
                       :loading="loading"
                       @click="save"
                     >
@@ -109,7 +142,7 @@
                       <span>Confirmar</span>
                     </v-btn>
 
-                    <v-btn text class="mb-4 pl-6 pr-6" @click="stepper = 1">
+                    <v-btn text class="pl-6 pr-6" @click="recoverImageAndGoBack">
                       <v-icon class="ma-0 mr-2 text--secondary">mdi-chevron-left</v-icon>
                       <span>Voltar</span>
                     </v-btn>
@@ -117,16 +150,12 @@
                 </v-form>
               </v-stepper-content>
 
-              <v-stepper-step
-                :complete="stepper > 3"
-                step="3"
-                :editable="formGeneralValid && formImageValid"
-              >
+              <v-stepper-step :complete="stepper > 3" :step="3" :editable="formGeneralValid">
                 <span>Horários de funcionamento</span>
                 <small>Selecione os dias e preencha com os horários de cada dia</small>
               </v-stepper-step>
 
-              <v-stepper-content step="3" class="pb-2">
+              <v-stepper-content :step="3" class="pb-2">
                 <v-form ref="formActiveDays" v-model.lazy="formActiveDaysValid" class="ml-n8">
                   <v-list class="active-days pt-1">
                     <v-list-item v-for="day of formData.activeDays" :key="day.day" class="pl-0">
@@ -183,7 +212,7 @@
                             v-if="day.timeStart || day.timeEnd"
                             class="pa-0 pl-2 pr-2 flex-grow-0"
                           >
-                            <v-btn small icon @click="day.timeStart = day.timeEnd = ''">
+                            <v-btn small icon @click="clearTimes(day)">
                               <v-icon>mdi-close</v-icon>
                             </v-btn>
                           </v-col>
@@ -303,10 +332,12 @@ export default {
       formData: {
         name: establishment ? establishment.name : '',
         types: establishment ? establishment.types : '',
+        imageFile: null,
         deliveryEnabled: establishment ? establishment.deliveryEnabled : false,
         deliveryPrice: establishment ? establishment.deliveryPrice : '',
         activeDays
-      }
+      },
+      imageURL: establishment ? establishment.imageURL : ''
     }
   },
   data () {
@@ -327,6 +358,7 @@ export default {
         name: rules.required,
         types: rules.required,
         deliveryPrice: rules.required,
+        imageFile: rules.singleImageUpload,
         timeStart: rules.required,
         timeEnd: rules.required
       }
@@ -384,6 +416,23 @@ export default {
           data.createdAt = this.$fireStoreObj.Timestamp.now()
         }
 
+        if (this.formData.imageFile) {
+          if (this.formData.imageFile === 'delete') {
+            const storage = this.$fireStorage.ref(`establishments/${doc.id}_1024x1024`)
+            await storage.delete()
+            data.imageURL = null
+          } else {
+            const storage = this.$fireStorage.ref(`establishments/${doc.id}`)
+            const snapshot = await storage.put(this.formData.imageFile)
+            const downloadURL = await snapshot.ref.getDownloadURL()
+            data.imageURL = downloadURL.split('?').join('_1024x1024?')
+          }
+
+          this.imageURL = data.imageURL
+          this.formData.imageFile = null
+          this.$refs.formImage.resetValidation()
+        }
+
         await ref.set(data, { merge: true })
 
         if (this.stepper < 3) this.stepper++
@@ -394,6 +443,20 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+
+    markImageToDelete () {
+      this.formData.imageFile = 'delete'
+    },
+
+    recoverImageAndGoBack () {
+      this.formData.imageFile = null
+      this.stepper--
+    },
+
+    clearTimes (day) {
+      day.timeStart = ''
+      day.timeEnd = ''
     }
   },
   head: () => ({
