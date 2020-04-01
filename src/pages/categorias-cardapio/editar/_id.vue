@@ -55,16 +55,28 @@
 
                 <v-card
                   v-if="!formData.imageFile && formData.imageURL"
-                  class="grey lighten-3 elevation-0 mb-4"
+                  class="grey lighten-3 mt-3 mb-1"
+                  width="280"
+                  :loading="formData.imageURL === 'loading'"
                 >
-                  <v-img :src="formData.imageURL" max-height="180" aspect-ratio="1" contain />
-
-                  <v-btn fab absolute small bottom right color="accent" @click="markImageToDelete">
-                    <v-icon>mdi-delete</v-icon>
-                  </v-btn>
+                  <v-img
+                    v-if="formData.imageURL !== 'loading'"
+                    :src="formData.imageURL"
+                    height="240"
+                  ></v-img>
+                  <v-card-actions>
+                    <v-spacer />
+                    <v-btn small icon @click="markImageToDelete">
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </v-card-actions>
                 </v-card>
 
-                <v-alert v-else-if="formData.imageFile === 'delete'" type="warning">
+                <v-alert
+                  v-else-if="formData.imageFile === 'delete'"
+                  class="mt-3 mb-1"
+                  type="warning"
+                >
                   <span>Confirme para remover definitivamente esta imagem.</span>
                 </v-alert>
 
@@ -125,16 +137,18 @@ export default {
       synonyms: []
     }
 
-    if (params.id && params.id !== 'incluir') {
+    if (params && params.id) {
       const doc = await app.$fireStore
         .collection('menuCategories')
-        .doc(`${store.state.authUser.id}/${params.id}`)
+        .doc(params.id)
         .get()
 
-      if (doc.exists) {
+      if (doc.exists && doc.data().uid === store.state.authUser.uid) {
         formData.name = doc.data().name
         formData.synonyms = doc.data().synonyms
         formData.imageURL = doc.data().imageURL
+      } else {
+        app.router.push('/categorias-cardapio/incluir')
       }
     }
 
@@ -144,7 +158,7 @@ export default {
   },
   data () {
     return {
-      loading: false,
+      loading: true,
       formValid: false
     }
   },
@@ -156,7 +170,7 @@ export default {
     },
 
     mode () {
-      return this.$route.params.id !== 'incluir' ? 'edit' : 'insert'
+      return this.$route.params.id ? 'edit' : 'insert'
     },
 
     formRules () {
@@ -166,6 +180,9 @@ export default {
       }
     }
   },
+  mounted () {
+    this.loading = false
+  },
   methods: {
     async save () {
       if (!this.$refs.form.validate()) return false
@@ -173,47 +190,53 @@ export default {
       try {
         this.loading = true
 
-        const ref = this.$fireStore.collection(
-          `menuCategories/${this.authUser.id}`
-        )
-
-        const doc = this.id ? await ref.doc(this.id).get() : ref.doc()
+        const collection = this.$fireStore.collection('menuCategories')
 
         const data = {}
-        if (this.id) {
+        const doc = this.id ? await collection.doc(this.id) : collection.doc()
+
+        if (doc.exists) {
+          if (doc.data().uid !== this.authUser.uid) return false
+
           data.updatedAt = this.$fireStoreObj.Timestamp.now()
         } else {
           data.createdAt = this.$fireStoreObj.Timestamp.now()
         }
 
+        data.uid = this.authUser.uid
         data.name = this.formData.name || null
-        data.synonyms = this.formData.synonyms.length
-          ? this.formData.synonyms
-          : null
+        data.synonyms =
+          this.formData.synonyms && this.formData.synonyms.length
+            ? this.formData.synonyms
+            : null
 
         if (this.formData.imageFile) {
           if (this.formData.imageFile === 'delete') {
-            const storage = this.$fireStorage.ref(
-              `menuCategories/${this.authUser.id}/${doc.id}_1024x1024`
-            )
-            await storage.delete()
+            const refName = `menuCategories/${doc.id}_1024x1024`
+            await this.$fireStorage.ref(refName).delete()
             data.imageURL = null
+            this.formData.imageURL = null
           } else {
-            const storage = this.$fireStorage.ref(
-              `menuCategories/${this.authUser.id}/${doc.id}`
-            )
+            const refName = `menuCategories/${doc.id}`
+            const storage = this.$fireStorage.ref(refName)
             const snapshot = await storage.put(this.formData.imageFile)
             const downloadURL = await snapshot.ref.getDownloadURL()
             data.imageURL = downloadURL.split('?').join('_1024x1024?')
+            this.formData.imageURL = 'loading'
           }
 
-          this.formData.imageURL = data.imageURL
           this.formData.imageFile = null
+          this.$refs.form.resetValidation()
         }
 
-        this.$refs.form.resetValidation()
-        await ref.set(data, { merge: true })
+        await doc.set(data, { merge: true })
         this.$snackbar.showMessage(getMessage('save-success'), 'success')
+
+        if (this.formData.imageURL === 'loading') {
+          setTimeout(() => {
+            this.formData.imageURL = data.imageURL
+          }, 3000)
+        }
       } catch (error) {
         console.error(error)
         this.$snackbar.showMessage(getMessage(error), 'error')
@@ -222,20 +245,25 @@ export default {
       }
     },
 
+    markImageToDelete () {
+      this.formData.imageFile = 'delete'
+    },
+
     synonymsToLowerCase (value) {
-      if (this.formData) this.formData.synonyms = value.map(item => item.toLowerCase())
+      if (this.formData)
+        this.formData.synonyms = value.map((item) => item.toLowerCase())
     }
   },
   head () {
     return {
-      title: this.mode === 'edit' ? 'Editar categoria' : 'Adicionar categoria'
+      title: this.mode === 'edit' ? 'Editar categoria' : 'Incluir categoria'
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.v-autocomplete ::v-deep input[type="text"] {
+.v-autocomplete ::v-deep input[type='text'] {
   text-transform: lowercase;
 }
 </style>

@@ -10,6 +10,8 @@ export const messages = {
   'auth/password-reset-sent': 'E-mail enviado. Acesse sua caixa de entrada para prosseguir.',
   'auth/success': 'Acesso concedido, redirecionando...',
   'save-success': 'As informações foram salvas com sucesso!',
+  'remove-success': 'O registro foi excluído com sucesso!',
+  'get-error': 'Não foi possível localizar os dados solicitados.',
   [undefined]: 'A comunicação com o servidor não pôde ser concluída.'
 }
 

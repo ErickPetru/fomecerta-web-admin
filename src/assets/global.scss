@@ -24,6 +24,17 @@
   font-size: .875rem;
 }
 
+.form-with-fab .v-speed-dial--bottom,
+.form-with-fab .v-btn--absolute.v-btn--bottom {
+  z-index: 5;
+  bottom: 28px !important;
+}
+
+.form-with-fab .v-data-table tbody tr,
+.form-with-fab .v-data-table tbody tr .v-chip {
+  cursor: pointer;
+}
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus textarea:-webkit-autofill,
