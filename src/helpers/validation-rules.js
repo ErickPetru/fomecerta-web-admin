@@ -9,6 +9,9 @@ export default {
       'Preencha com todos os seus nomes e sobrenomes.'
   ],
   singleImageUpload: [
+    (value) => !value || value.size < 2000000 || 'O arquivo selecionado deve ter um tamanho máximo de 2 MB.'
+  ],
+  singleImageUploadRequired: [
     (value) => !!value || 'É necessário preencher este campo.',
     (value) => !value || value.size < 2000000 || 'O arquivo selecionado deve ter um tamanho máximo de 2 MB.'
   ],

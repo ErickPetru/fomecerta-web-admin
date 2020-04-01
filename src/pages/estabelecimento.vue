@@ -364,7 +364,7 @@ export default {
         name: rules.required,
         types: rules.required,
         deliveryPrice: rules.required,
-        imageFile: rules.singleImageUpload,
+        imageFile: rules.singleImageUploadRequired,
         timeStart: rules.required,
         timeEnd: rules.required
       }
@@ -395,14 +395,14 @@ export default {
       try {
         this.loading = true
 
-        const ref = this.$fireStore
+        const doc = this.$fireStore
           .collection('establishments')
           .doc(this.authUser.uid)
 
-        const doc = await ref.get()
-
         const data = {}
-        if (doc.exists) {
+        const snapshot = await doc.get()
+
+        if (snapshot.exists) {
           data.updatedAt = this.$fireStoreObj.Timestamp.now()
         } else {
           data.createdAt = this.$fireStoreObj.Timestamp.now()
@@ -414,16 +414,15 @@ export default {
           data.deliveryEnabled = this.formData.deliveryEnabled
           data.deliveryPrice = this.deliveryPrice
 
-          await ref.set(data, { merge: true })
+          await doc.set(data, { merge: true })
         } else if (this.stepper === 2 && this.formData.imageFile) {
           if (this.formData.imageFile === 'delete') {
-            const storage = this.$fireStorage.ref(
-              `establishments/${doc.id}_1024x1024`
-            )
-            await storage.delete()
+            const refName = `establishments/${doc.id}_1024x1024`
+            await this.$fireStorage.ref(refName).delete()
             data.imageURL = null
           } else {
-            const storage = this.$fireStorage.ref(`establishments/${doc.id}`)
+            const refName = `establishments/${doc.id}`
+            const storage = this.$fireStorage.ref(refName)
             const snapshot = await storage.put(this.formData.imageFile)
             const downloadURL = await snapshot.ref.getDownloadURL()
             data.imageURL = downloadURL.split('?').join('_1024x1024?')
@@ -433,7 +432,7 @@ export default {
           this.formData.imageFile = null
           this.$refs.formImage.resetValidation()
 
-          await ref.set(data, { merge: true })
+          await doc.set(data, { merge: true })
         } else if (this.stepper === 3) {
           data.activeDays = this.formData.activeDays
             .filter((item) => !!item.active)
@@ -443,7 +442,7 @@ export default {
               timeEnd: item.timeEnd || null
             }))
 
-          await ref.set(data, { merge: true })
+          await doc.set(data, { merge: true })
         }
 
         if (this.stepper < 3) this.stepper++
