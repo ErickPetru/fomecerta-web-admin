@@ -1,4 +1,4 @@
-export default function ({ store, app, redirect }) {
+export default function ({ store, redirect }) {
   if (!store.state.authUser || !store.state.authUser.emailVerified) {
     return redirect('/acesso-restrito')
   }
