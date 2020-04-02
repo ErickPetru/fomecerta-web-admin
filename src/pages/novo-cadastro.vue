@@ -163,6 +163,11 @@ export default {
           displayName: this.formData.name
         })
 
+        await this.$fireFunc.httpsCallable('grantCustomRole')({
+          email: this.formData.email,
+          role: 'establishment'
+        })
+
         await user.sendEmailVerification({
           url: `${window.location.origin}/acesso-restrito`
         })
