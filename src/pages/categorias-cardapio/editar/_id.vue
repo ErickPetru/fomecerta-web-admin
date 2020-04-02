@@ -129,7 +129,7 @@ export default {
   name: 'PageMenuCategory',
   middleware: 'auth',
   mixins: [restrictGuests],
-  async asyncData ({ app, params, store }) {
+  async asyncData ({ app, params, store, redirect }) {
     const formData = {
       name: '',
       imageFile: null,
@@ -143,12 +143,12 @@ export default {
         .doc(params.id)
         .get()
 
-      if (doc.exists && doc.data().uid === store.state.authUser.uid) {
-        formData.name = doc.data().name
-        formData.synonyms = doc.data().synonyms
-        formData.imageURL = doc.data().imageURL
+      if (doc.exists && doc.get('uid') === store.state.authUser.uid) {
+        formData.name = doc.get('name')
+        formData.synonyms = doc.get('synonyms')
+        formData.imageURL = doc.get('imageURL')
       } else {
-        app.router.push('/categorias-cardapio/incluir')
+        return redirect('/categorias-cardapio/incluir')
       }
     }
 
@@ -196,7 +196,7 @@ export default {
         const doc = this.id ? await collection.doc(this.id) : collection.doc()
 
         if (doc.exists) {
-          if (doc.data().uid !== this.authUser.uid) return false
+          if (doc.get('uid') !== this.authUser.uid) return false
 
           data.updatedAt = this.$fireStoreObj.Timestamp.now()
         } else {
