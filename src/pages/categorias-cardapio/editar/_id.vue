@@ -89,7 +89,7 @@
                     :rules="formRules.imageFile"
                     show-size
                     truncate-length="50"
-                    accept="image/*"
+                    accept="image/jpeg, image/png"
                     class="pt-2"
                   />
                 </div>
