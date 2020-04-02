@@ -15,6 +15,9 @@ export default {
     (value) => !!value || 'É necessário preencher este campo.',
     (value) => !value || value.size < 2000000 || 'O arquivo selecionado deve ter um tamanho máximo de 2 MB.'
   ],
+  sku: [
+    (value) => !value || value.length < 18 || 'Não utilize mais do que 18 caracteres para o SKU.',
+  ],
   email: [
     (value) => !!value || 'É necessário informar seu e-mail.',
     (value) => /.+@.+\..+/.test(value) || 'Por favor, informe um e-mail válido.'
