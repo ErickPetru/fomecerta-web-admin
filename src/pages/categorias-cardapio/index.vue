@@ -121,7 +121,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import { getMessage } from '@/helpers/messages'
 import restrictGuests from '@/mixins/restrict-guests'
 
@@ -129,9 +128,10 @@ export default {
   name: 'PageMenuCategories',
   middleware: 'auth',
   mixins: [restrictGuests],
-  async asyncData ({ app }) {
+  async asyncData ({ app, store }) {
     const snapshot = await app.$fireStore
       .collection('menuCategories')
+      .where('uid', '==', store.state.authUser.uid)
       .orderBy('name', 'asc')
       .get()
 
@@ -163,8 +163,6 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['authUser']),
-
     selectedItem: {
       get () {
         if (this.selected.length) return this.selected[0]
