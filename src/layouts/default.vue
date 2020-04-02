@@ -22,6 +22,15 @@
             <v-list-item-title>Página inicial</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+
+        <v-list-item v-if="authUser.role === 'admin'" to="/atribuir-perfil" router exact>
+          <v-list-item-action>
+            <v-icon>mdi-account-box</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>Atribuir perfil</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
 
       <v-divider />
