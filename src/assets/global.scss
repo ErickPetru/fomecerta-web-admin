@@ -2,7 +2,6 @@
 
 .v-card.float-over-expanded {
   margin-top: -80px;
-  z-index: 5;
 }
 
 @media #{map-get($display-breakpoints, 'md-and-up')} {
