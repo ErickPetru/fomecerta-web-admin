@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
     <v-row justify="center">
-      <v-col cols="12" sm="10" md="8" xl="6">
+      <v-col cols="12" sm="10" md="9" xl="6">
         <v-card :loading="loading" class="float-over-expanded">
           <v-toolbar color="primary" flat>
             <v-btn icon nuxt to="/" class="ma-0 mr-2">
