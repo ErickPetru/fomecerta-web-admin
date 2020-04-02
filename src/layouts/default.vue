@@ -56,7 +56,7 @@
             <v-icon>mdi-pen</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Itens do cardápio</v-list-item-title>
+            <v-list-item-title>Itens</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
