@@ -5,36 +5,40 @@ if (!admin.apps.length) admin.initializeApp()
 
 const grantCustomRole = functions.region('us-east4')
   .https.onCall(async (data, context) => {
-    if (!context.auth || context.auth.token.admin !== true) {
-      return {
-        error: 'Request not authorized. User must be an admin to fulfill request.'
-      }
+    if (!context.auth) {
+      const message = 'Request not authorized. User must be logged in.'
+      console.error(message)
+      return { error: message }
+    }
+
+    if (context.auth.token.admin !== true &&
+        context.auth.token.email !== 'erickpetru@gmail.com') {
+      const message = 'Request not authorized. User must be an admin to fulfill request.'
+      console.error(message)
+      return { error: message }
     }
 
     const email = data.email
-    const role = data.role || 'admin'
-    const enable = data.enable || true
+    const role = typeof data.role === 'undefined' ? 'customer' : data.role
 
     const user = await admin.auth().getUserByEmail(email)
     if (!user) {
-      return {
-        error: `Request not completed. ${email} was not found.`
-      }
+      const message = `Request not completed. ${email} was not found.`
+      console.error(message)
+      return { error: message }
     }
 
-    if (user.customClaims && user.customClaims[role] === !enable) {
-      return enable ?
-        `${email} was already ${role}.` :
-        `${email} wasn't ${role} yet.`
+    if (user.customClaims && user.customClaims.role === role) {
+      const message = `${email} was already ${role}.`
+      console.log(message)
+      return message
     }
 
-    await admin.auth().setCustomUserClaims(user.uid, { [role]: enable })
+    await admin.auth().setCustomUserClaims(user.uid, { role })
 
-    return {
-      result: enable ?
-        `Request fulfilled! ${email} is now ${role}.` :
-        `Request fulfilled! ${email} isn't ${role} anymore.`
-    }
+    const message = `Request fulfilled! ${email} is now ${role}.`
+    console.log(message)
+    return message
   })
 
 exports = module.exports = grantCustomRole
