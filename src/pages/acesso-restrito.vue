@@ -139,6 +139,8 @@ export default {
           throw new ApplicationError('auth/email-not-verified', actionButton)
         }
 
+        await this.$fireAuth.currentUser.getIdToken(true)
+
         this.$snackbar.showMessage(getMessage('auth/success'), 'success')
       } catch (error) {
         console.error(error)
