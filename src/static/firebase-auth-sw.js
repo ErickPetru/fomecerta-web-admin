@@ -1,4 +1,4 @@
-const options = {"firebaseVersion":"7.12.0","config":{"apiKey":"AIzaSyApIJzDL5nJtIX16PffTP68HyfR1I9cWJ0","authDomain":"fome-certa-app.firebaseapp.com","databaseURL":"https:\u002F\u002Ffome-certa-app.firebaseio.com","projectId":"fome-certa-app","storageBucket":"fome-certa-app.appspot.com","messagingSenderId":"306617561272","appId":"1:306617561272:web:44ff1022e07df15bfa044d"},"onFirebaseHosting":false,"ignorePaths":["\u002F__webpack_hmr","\u002F_loading","\u002F_nuxt\u002F"]}
+const options = {"firebaseVersion":"7.12.0","config":{"apiKey":"AIzaSyApIJzDL5nJtIX16PffTP68HyfR1I9cWJ0","authDomain":"fome-certa-app.firebaseapp.com","databaseURL":"https:\u002F\u002Ffome-certa-app.firebaseio.com","projectId":"fome-certa-app","storageBucket":"fome-certa-app.appspot.com","messagingSenderId":"306617561272","appId":"1:306617561272:web:44ff1022e07df15bfa044d"},"onFirebaseHosting":true,"ignorePaths":["\u002F__webpack_hmr","\u002F_loading","\u002F_nuxt\u002F"]}
 const version = options.firebaseVersion
 const onFirebaseHosting = options.onFirebaseHosting
 const ignorePaths = options.ignorePaths

@@ -5,7 +5,7 @@ const colors = require('vuetify/es5/util/colors').default
 const isDev = process.env.NODE_ENV === 'development'
 
 module.exports = {
-  mode: 'spa',
+  mode: 'universal',
   head: {
     titleTemplate: '%s - FomeCerta',
     title: 'FomeCerta - O aplicativo certo para sua fome!',
@@ -79,14 +79,14 @@ module.exports = {
         initialize: {
           onAuthStateChangedAction: 'onAuthStateChanged'
         },
-        ssr: false
-        // ssr: {
-        //   credential: '~/private/serviceAccount.json',
+        // ssr: false
+        ssr: {
+          credential: '~/private/serviceAccount.json',
 
-        //   serverLogin: {
-        //     sessionLifetime: 15 * 60 * 1000 // 15 minutes
-        //   }
-        // }
+          serverLogin: {
+            sessionLifetime: 15 * 60 * 1000 // 15 minutes
+          }
+        }
       },
       firestore: {
         enablePersistence: {
