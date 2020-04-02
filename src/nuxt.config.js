@@ -93,7 +93,10 @@ module.exports = {
           synchronizeTabs: true
         }
       },
-      storage: true
+      storage: true,
+      functions: {
+        location: 'us-east4'
+      }
     }
   },
   pwa: {
