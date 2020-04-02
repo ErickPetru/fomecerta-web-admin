@@ -11,17 +11,17 @@
     "lint": "eslint --ext .js,.vue --ignore-path .eslintignore ."
   },
   "dependencies": {
-    "cross-env": "^5.2.0",
-    "express": "^4.16.4",
-    "nuxt": "^2.12.1"
+    "cross-env": "^5.2.1",
+    "express": "^4.17.1",
+    "nuxt": "^2.12.2"
   },
   "devDependencies": {
-    "@nuxtjs/firebase": "^5.0.5",
+    "@nuxtjs/firebase": "^5.0.6",
     "@nuxtjs/pwa": "^3.0.0-beta.20",
     "@nuxtjs/vuetify": "^1.11.0",
-    "firebase": "^7.12.0",
+    "firebase": "^7.13.1",
     "firebase-admin": "^8.10.0",
-    "nodemon": "^1.18.9",
+    "nodemon": "^1.19.4",
     "vue-currency-input": "^1.17.3"
   }
 }
