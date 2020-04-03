@@ -49,6 +49,30 @@
   }
 }
 
+.v-tooltip__content:not(.image-tooltip) {
+  padding: 4px !important;
+
+  &.menuable__content__active {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+  }
+
+  p:only-child {
+    margin: 8px 12px;
+    text-align: center;
+  }
+}
+
+.v-tooltip__content.image-tooltip {
+  padding: 0 !important;
+
+  .v-image {
+    border-radius: 4px !important;
+  }
+}
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus textarea:-webkit-autofill,

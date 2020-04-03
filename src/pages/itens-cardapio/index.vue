@@ -28,13 +28,55 @@
               @item-selected="itemSelected"
             >
               <template #item.description="{ item }">
-                <span
-                  class="d-inline-block text-truncate"
-                  style="max-width: 15vw"
-                >{{ item.description }}</span>
+                <v-tooltip
+                  v-if="item.description && item.description.length > 20"
+                  top
+                  color="info"
+                  max-width="300"
+                >
+                  <p>{{ item.description }}</p>
+                  <template #activator="{ on }">
+                    <span class="d-flex" v-on="on">
+                      <span
+                        class="d-block text-truncate"
+                        style="max-width: 150px"
+                      >{{ item.description }}</span>
+                      <v-icon small color="info">mdi-more</v-icon>
+                    </span>
+                  </template>
+                </v-tooltip>
+
+                <span v-else>{{ item.description }}</span>
               </template>
               <template #item.imageURL="{ item }">
-                <span v-if="!!item.imageURL" class="caption font-weight-medium success--text">Sim</span>
+                <v-tooltip
+                  v-if="!!item.imageURL"
+                  top
+                  color="info"
+                  max-width="100"
+                  content-class="image-tooltip"
+                >
+                  <v-img
+                    :src="item.imageURL.replace('_1000x1000', '_400x400')"
+                    max-width="100"
+                    width="100"
+                    height="100"
+                    class="ma-0 pa-0"
+                  >
+                    <template #placeholder>
+                      <v-row class="fill-height ma-0" align="center" justify="center">
+                        <v-progress-circular indeterminate color="grey lighten-5" />
+                      </v-row>
+                    </template>
+                  </v-img>
+                  <template #activator="{ on }">
+                    <span v-on="on">
+                      <span class="caption font-weight-medium success--text">Sim</span>
+                      <v-icon small color="info">mdi-more</v-icon>
+                    </span>
+                  </template>
+                </v-tooltip>
+
                 <span v-else class="caption error--text">Não</span>
               </template>
             </v-data-table>
@@ -139,11 +181,11 @@ export default {
       speedDial: false,
       speedDialTimer: null,
       showRemoveDialog: false,
-      search: '',
       sortBy: 'name',
       selected: [],
       headers: [
         { text: 'Categoria', value: 'category.name' },
+        { text: 'SKU', value: 'sku' },
         { text: 'Nome', value: 'name' },
         { text: 'Descrição', value: 'description' },
         { text: 'Preço', value: 'price' },

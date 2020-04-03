@@ -27,20 +27,73 @@
               @item-selected="itemSelected"
             >
               <template #item.synonyms="{ item }">
-                <template v-if="!!item.synonyms">
+                <span v-if="!item.synonyms" class="caption">Nenhum sinônimo</span>
+
+                <v-tooltip v-else-if="item.synonyms.length === 1" top color="info" max-width="300">
+                  <v-chip
+                    small
+                    label
+                    dark
+                    color="info"
+                    :input-value="true"
+                    class="ma-1"
+                  >{{ item.synonyms[0] }}</v-chip>
+                  <template #activator="{ on }">
+                    <span v-on="on">
+                      <span class="caption">1 sinônimo</span>
+                      <v-icon small color="info">mdi-more</v-icon>
+                    </span>
+                  </template>
+                </v-tooltip>
+
+                <v-tooltip v-else top color="info" max-width="300">
                   <v-chip
                     v-for="(synonym, index) of item.synonyms"
                     :key="index"
                     small
                     label
+                    dark
+                    color="info"
                     :input-value="true"
-                    class="ma-1 ml-0"
+                    class="ma-1"
                   >{{ synonym }}</v-chip>
-                </template>
-                <span v-else class="caption">Nenhum cadastrado</span>
+                  <template #activator="{ on }">
+                    <span v-on="on">
+                      <span class="caption">{{ item.synonyms.length }} sinônimos</span>
+                      <v-icon small color="info">mdi-more</v-icon>
+                    </span>
+                  </template>
+                </v-tooltip>
               </template>
               <template #item.imageURL="{ item }">
-                <span v-if="!!item.imageURL" class="caption font-weight-medium success--text">Sim</span>
+                <v-tooltip
+                  v-if="!!item.imageURL"
+                  top
+                  color="info"
+                  max-width="100"
+                  content-class="image-tooltip"
+                >
+                  <v-img
+                    :src="item.imageURL.replace('_1000x1000', '_400x400')"
+                    max-width="100"
+                    width="100"
+                    height="100"
+                    class="ma-0 pa-0"
+                  >
+                    <template #placeholder>
+                      <v-row class="fill-height ma-0" align="center" justify="center">
+                        <v-progress-circular indeterminate color="grey lighten-5" />
+                      </v-row>
+                    </template>
+                  </v-img>
+                  <template #activator="{ on }">
+                    <span v-on="on">
+                      <span class="caption font-weight-medium success--text">Sim</span>
+                      <v-icon small color="info">mdi-more</v-icon>
+                    </span>
+                  </template>
+                </v-tooltip>
+
                 <span v-else class="caption error--text">Não</span>
               </template>
               <template #item.usedBy="{ item }">
@@ -152,7 +205,6 @@ export default {
       speedDial: false,
       speedDialTimer: null,
       showRemoveDialog: false,
-      search: '',
       sortBy: 'name',
       selected: [],
       headers: [
