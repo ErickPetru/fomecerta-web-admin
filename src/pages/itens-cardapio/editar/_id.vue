@@ -58,16 +58,20 @@
                   >
                     <template #append>
                       <v-tooltip
-                        left
+                        top
                         color="info"
                         max-width="500"
-                        transition="scroll-x-reverse-transition"
+                        transition="scroll-y-reverse-transition"
                       >
                         <span>
                           SKU (
-                          <i>Stock Keeping Unit</i>), ou
-                          <b>Unidade de Controle de Estoque</b>. Trata-se apenas de um código de identificação único para cada um dos seus produtos,
-                          <b>criado e gerenciado por você mesmo(a)</b>, para facilitar a rápida identificação do item e simplificar a integração com outros sistemas.
+                          <i>Stock Keeping Unit</i>), ou Unidade de Controle de Estoque.
+                          Refere-se a um
+                          <b>código de identificação único</b> para cada um
+                          dos seus produtos,
+                          <b>criado e gerenciado por você mesmo(a)</b>,
+                          para facilitar a rápida identificação do item e simplificar a
+                          integração com outros sistemas.
                         </span>
                         <template #activator="{ on }">
                           <v-icon class="help-icon info--text" v-on="on">mdi-help-circle</v-icon>
@@ -83,7 +87,7 @@
                     v-model="formData.name"
                     :rules="formRules.name"
                     label="Nome do item"
-                    hint="Nome visível no cardápio (ex.: 4 Queijos)."
+                    hint="Nome visível no cardápio (ex.: Quatro Queijos)."
                     persistent-hint
                     type="text"
                     autocomplete="off"
@@ -107,12 +111,14 @@
                 </v-col>
 
                 <v-col cols="12" lg="9">
-                  <v-text-field
+                  <v-textarea
                     ref="description"
                     v-model="formData.description"
                     label="Descrição do item"
                     hint="Descrição do que compõe o item (ex.: Pizza de muçarela, parmesão, gorgonzola e provolone)."
                     persistent-hint
+                    auto-grow
+                    rows="1"
                     type="text"
                     autocomplete="off"
                     class="pb-2"
@@ -121,50 +127,64 @@
                 </v-col>
 
                 <v-col cols="12">
-                  <v-card
-                    v-if="!formData.imageFile && formData.imageURL"
-                    class="grey lighten-3 mt-3 mb-1"
-                    width="280"
-                    :loading="formData.imageURL === 'loading'"
-                  >
-                    <v-img
-                      v-if="formData.imageURL !== 'loading'"
-                      :src="formData.imageURL"
-                      height="240"
-                    ></v-img>
-                    <v-card-actions>
-                      <v-spacer />
-                      <v-btn small icon @click="markImageToDelete">
-                        <v-icon>mdi-delete</v-icon>
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-
-                  <v-alert
-                    v-else-if="formData.imageFile === 'delete'"
-                    class="mt-3 mb-1"
-                    type="warning"
-                  >
-                    <span>Confirme para remover definitivamente esta imagem.</span>
-                  </v-alert>
-
-                  <div v-else>
-                    <v-file-input
-                      v-model="formData.imageFile"
-                      label="Arquivo de imagem"
-                      hint="Dica: imagens quadradas de aproximadamente 600px para melhores resultados."
-                      persistent-hint
-                      :rules="formRules.imageFile"
-                      show-size
-                      truncate-length="50"
-                      accept="image/jpeg, image/png"
-                      class="pt-2"
-                    />
-                  </div>
+                  <v-text-field
+                    v-if="typeof formData.imageFile === 'string'"
+                    v-model="formData.imageFile"
+                    label="Arquivo de imagem"
+                    hint="Dica: imagens quadradas de aproximadamente 600px para melhores resultados."
+                    persistent-hint
+                    class="pt-0 pb-2"
+                    prepend-icon="mdi-paperclip"
+                    clearable
+                    readonly
+                    @keydown.delete="markImageToDelete"
+                    @click:clear="markImageToDelete"
+                  />
+                  <v-file-input
+                    v-else
+                    v-model="formData.imageFile"
+                    label="Arquivo de imagem"
+                    hint="Dica: imagens quadradas de aproximadamente 600px para melhores resultados."
+                    persistent-hint
+                    :rules="formRules.imageFile"
+                    truncate-length="50"
+                    accept="image/jpeg, image/png"
+                    class="pt-0 pb-2"
+                    @change="onImageChange"
+                  />
                 </v-col>
               </v-row>
 
-              <div>
+              <v-row align="center" justify="center" class="item-preview">
+                <v-col cols="12" sm="11" md="10" lg="9" align="center">
+                  <span class="overline">Pré-visualização</span>
+
+                  <v-card class="mt-3 mb-1 d-flex" color="grey lighten-5" height="180">
+                    <v-img
+                      v-if="formData.imageURL && formData.imageURL !== 'delete'"
+                      :src="formData.imageURL"
+                      :lazy-src="formData.imageURL && formData.imageURL.startsWith('http') ? formData.imageURL.replace('_400x400', '_50x50') : formData.imageURL"
+                      max-width="180"
+                      width="180"
+                      height="180"
+                    />
+
+                    <div class="ma-5 ml-6 mr-12 d-flex flex-column text-left">
+                      <h1
+                        class="headline font-weight-bold mb-2"
+                      >{{ formData.name || 'Item sem nome' }}</h1>
+                      <p class="body-2 grey--text mb-auto">{{ formData.description }}</p>
+
+                      <p class="body-2 grey--text mt-auto mb-0">
+                        <span>Valor:</span>
+                        <strong class="body-1 font-weight-bold red--text">{{ priceFormmated }}</strong>
+                      </p>
+                    </div>
+                  </v-card>
+                </v-col>
+              </v-row>
+
+              <div v-if="false">
                 <v-btn
                   color="primary black--text"
                   class="pl-4 pr-4 mt-6 mr-2"
@@ -185,12 +205,19 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <v-fab-transition mode="out-in">
+      <v-btn fab fixed bottom right dark :color="fabColor" :loading="loading" @click="save">
+        <v-icon>mdi-content-save</v-icon>
+      </v-btn>
+    </v-fab-transition>
   </v-container>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import { getMessage } from '@/helpers/messages'
+import imageSizes from '@/helpers/image-sizes'
 import rules from '@/helpers/validation-rules'
 import restrictGuests from '@/mixins/restrict-guests'
 
@@ -221,6 +248,13 @@ export default {
         formData.description = doc.get('description')
         formData.price = doc.get('price')
         formData.imageURL = doc.get('imageURL')
+        if (formData.imageURL) {
+          formData.imageURL = formData.imageURL.replace(
+            '_1000x1000',
+            '_400x400'
+          )
+          formData.imageFile = doc.id
+        }
         formData.category = {
           id: doc.get('category').id,
           name: doc.get('category').name
@@ -262,6 +296,16 @@ export default {
 
     mode () {
       return this.$route.params.id ? 'edit' : 'insert'
+    },
+
+    fabColor () {
+      return this.mode === 'insert' ? 'green darken-2' : 'indigo'
+    },
+
+    priceFormmated () {
+      if (!this.formData.price) return 'Indisponível'
+      else if (this.formData.price.startsWith('R$')) return this.formData.price
+      else return `R$ ${this.formData.price}`
     },
 
     formRules () {
@@ -309,23 +353,33 @@ export default {
             }
           : null
 
-        if (this.formData.imageFile) {
-          if (this.formData.imageFile === 'delete') {
-            const refName = `menuItems/${doc.id}_1024x1024`
-            await this.$fireStorage.ref(refName).delete()
-            data.imageURL = null
-            this.formData.imageURL = null
-          } else {
-            const refName = `menuItems/${doc.id}`
-            const storage = this.$fireStorage.ref(refName)
-            const snapshot = await storage.put(this.formData.imageFile)
-            const downloadURL = await snapshot.ref.getDownloadURL()
-            data.imageURL = downloadURL.split('?').join('_1024x1024?')
-            this.formData.imageURL = 'loading'
+        if (this.formData.imageURL === 'delete') {
+          for (const size of imageSizes) {
+            await this.$fireStorage.ref(`menuItems/${doc.id}_${size}`).delete()
           }
 
+          data.imageURL = null
+          this.formData.imageURL = null
           this.formData.imageFile = null
-          this.$refs.form.resetValidation()
+        } else if (
+          this.formData.imageFile &&
+          typeof this.formData.imageFile === 'object'
+        ) {
+          const refName = `menuItems/${doc.id}`
+          const storage = this.$fireStorage.ref(refName)
+          const snapshot = await storage.put(this.formData.imageFile)
+          const downloadURL = await snapshot.ref.getDownloadURL()
+          data.imageURL = downloadURL.split('?').join('_1000x1000?')
+          this.formData.imageFile = doc.id
+
+          setTimeout(
+            () =>
+              (this.formData.imageURL = data.imageURL.replace(
+                '_1000x1000?',
+                '_400x400?'
+              )),
+            3000
+          )
         }
 
         await doc.set(data, { merge: true })
@@ -333,10 +387,6 @@ export default {
 
         if (this.mode === 'insert') {
           this.$router.push('/itens-cardapio')
-        } else if (this.formData.imageURL === 'loading') {
-          setTimeout(() => {
-            this.formData.imageURL = data.imageURL
-          }, 3000)
         }
       } catch (error) {
         console.error(error)
@@ -347,12 +397,24 @@ export default {
     },
 
     markImageToDelete () {
-      this.formData.imageFile = 'delete'
+      this.formData.imageURL = 'delete'
+      this.formData.imageFile = null
     },
 
     synonymsToLowerCase (value) {
       if (this.formData)
         this.formData.synonyms = value.map((item) => item.toLowerCase())
+    },
+
+    onImageChange (file) {
+      if (!file) {
+        this.formData.imageURL = null
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onload = (e) => (this.formData.imageURL = e.target.result)
+      reader.readAsDataURL(file)
     }
   },
   head () {

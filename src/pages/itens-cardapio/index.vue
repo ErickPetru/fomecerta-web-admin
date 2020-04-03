@@ -28,7 +28,10 @@
               @item-selected="itemSelected"
             >
               <template #item.description="{ item }">
-                <span class="d-inline-block text-truncate" style="max-width: 15vw">{{ item.description }}</span>
+                <span
+                  class="d-inline-block text-truncate"
+                  style="max-width: 15vw"
+                >{{ item.description }}</span>
               </template>
               <template #item.imageURL="{ item }">
                 <span v-if="!!item.imageURL" class="caption font-weight-medium success--text">Sim</span>
@@ -71,7 +74,7 @@
             <v-icon v-else>mdi-dots-vertical</v-icon>
           </v-btn>
         </template>
-        <v-btn ref="teste" fab dark small color="green darken-2" nuxt :to="destinationInsert">
+        <v-btn fab dark small color="green darken-2" nuxt :to="destinationInsert">
           <v-icon>mdi-plus</v-icon>
         </v-btn>
         <v-btn v-if="selectedItem" fab dark small color="indigo" nuxt :to="destinationEdit">
@@ -106,6 +109,7 @@
 
 <script>
 import { getMessage } from '@/helpers/messages'
+import imageSizes from '@/helpers/image-sizes'
 import restrictGuests from '@/mixins/restrict-guests'
 
 export default {
@@ -191,9 +195,10 @@ export default {
           return false
         }
 
-        if (doc.data().imageURL) {
-          const refName = `menuItems/${doc.id}_1024x1024`
-          await this.$fireStorage.ref(refName).delete()
+        if (doc.get('imageURL')) {
+          for (const size of imageSizes) {
+            await this.$fireStorage.ref(`menuItems/${doc.id}_${size}`).delete()
+          }
         }
 
         await this.$fireStore
@@ -201,10 +206,8 @@ export default {
           .doc(doc.id)
           .delete()
 
-        this.items.splice(
-          this.items.indexOf((item) => item.id === doc.id),
-          1
-        )
+        const indexOf = this.items.indexOf((item) => item.id === doc.id)
+        this.items.splice(indexOf, 1)
         this.selectedItem = null
 
         this.$snackbar.showMessage(getMessage('remove-success'), 'success')
