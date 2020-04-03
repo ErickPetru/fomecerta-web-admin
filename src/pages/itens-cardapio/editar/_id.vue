@@ -22,7 +22,6 @@
                     label="Categoria do item"
                     hint="Categoria do item (ex.: Pizzas)."
                     persistent-hint
-                    class="pb-2"
                     return-object
                     item-text="name"
                     @keypress.enter="save"
@@ -53,7 +52,7 @@
                     persistent-hint
                     type="text"
                     autocomplete="off"
-                    class="sku-field pb-2"
+                    class="sku-field"
                     @keypress.enter="save"
                   >
                     <template #append>
@@ -91,7 +90,6 @@
                     persistent-hint
                     type="text"
                     autocomplete="off"
-                    class="pb-2"
                     @keypress.enter="save"
                   />
                 </v-col>
@@ -121,7 +119,6 @@
                     rows="1"
                     type="text"
                     autocomplete="off"
-                    class="pb-2"
                     @keypress.enter="save"
                   />
                 </v-col>
@@ -133,7 +130,6 @@
                     label="Arquivo de imagem"
                     hint="Dica: imagens quadradas de aproximadamente 600px para melhores resultados."
                     persistent-hint
-                    class="pt-0 pb-2"
                     prepend-icon="mdi-paperclip"
                     clearable
                     readonly
@@ -143,64 +139,47 @@
                   <v-file-input
                     v-else
                     v-model="formData.imageFile"
+                    :rules="formRules.imageFile"
+                    show-size
                     label="Arquivo de imagem"
                     hint="Dica: imagens quadradas de aproximadamente 600px para melhores resultados."
                     persistent-hint
-                    :rules="formRules.imageFile"
                     truncate-length="50"
                     accept="image/jpeg, image/png"
-                    class="pt-0 pb-2"
                     @change="onImageChange"
                   />
                 </v-col>
               </v-row>
-
-              <v-row align="center" justify="center" class="item-preview">
-                <v-col cols="12" sm="11" md="10" lg="9" align="center">
-                  <span class="overline">Pré-visualização</span>
-
-                  <v-card class="mt-3 mb-1 d-flex" color="grey lighten-5" height="180">
-                    <v-img
-                      v-if="formData.imageURL && formData.imageURL !== 'delete'"
-                      :src="formData.imageURL"
-                      :lazy-src="formData.imageURL && formData.imageURL.startsWith('http') ? formData.imageURL.replace('_400x400', '_50x50') : formData.imageURL"
-                      max-width="180"
-                      width="180"
-                      height="180"
-                    />
-
-                    <div class="ma-5 ml-6 mr-12 d-flex flex-column text-left">
-                      <h1
-                        class="headline font-weight-bold mb-2"
-                      >{{ formData.name || 'Item sem nome' }}</h1>
-                      <p class="body-2 grey--text mb-auto">{{ formData.description }}</p>
-
-                      <p class="body-2 grey--text mt-auto mb-0">
-                        <span>Valor:</span>
-                        <strong class="body-1 font-weight-bold red--text">{{ priceFormmated }}</strong>
-                      </p>
-                    </div>
-                  </v-card>
-                </v-col>
-              </v-row>
-
-              <div v-if="false">
-                <v-btn
-                  color="primary black--text"
-                  class="pl-4 pr-4 mt-6 mr-2"
-                  :loading="loading"
-                  @click="save"
-                >
-                  <v-icon class="ma-0 mr-2 text--secondary">mdi-check-circle</v-icon>
-                  <span>Confirmar</span>
-                </v-btn>
-
-                <v-btn text class="pl-4 pr-4 mt-6" nuxt exact to="/itens-cardapio">
-                  <v-icon class="ma-0 mr-2 text--secondary">mdi-chevron-left</v-icon>
-                  <span>Voltar</span>
-                </v-btn>
-              </div>
             </v-form>
+
+            <v-row align="center" justify="center" class="item-preview">
+              <v-col cols="12" sm="11" md="10" lg="9" align="center">
+                <span class="overline">Pré-visualização</span>
+
+                <v-card class="mt-3 mb-1 d-flex" color="grey lighten-5" height="180">
+                  <v-img
+                    v-if="formData.imageURL && formData.imageURL !== 'delete'"
+                    :src="formData.imageURL"
+                    :lazy-src="formData.imageURL && formData.imageURL.startsWith('http') ? formData.imageURL.replace('_400x400', '_50x50') : formData.imageURL"
+                    max-width="180"
+                    width="180"
+                    height="180"
+                  />
+
+                  <div class="ma-5 ml-6 mr-12 d-flex flex-column text-left">
+                    <h1
+                      class="headline font-weight-bold mb-2"
+                    >{{ formData.name || 'Item sem nome' }}</h1>
+                    <p class="body-2 grey--text mb-auto">{{ formData.description }}</p>
+
+                    <p class="body-2 grey--text mt-auto mb-0">
+                      <span>Valor:</span>
+                      <strong class="body-1 font-weight-bold red--text">{{ priceFormmated }}</strong>
+                    </p>
+                  </div>
+                </v-card>
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card>
       </v-col>
@@ -215,7 +194,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import { getMessage } from '@/helpers/messages'
 import imageSizes from '@/helpers/image-sizes'
 import rules from '@/helpers/validation-rules'
@@ -288,8 +266,6 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['authUser']),
-
     id () {
       return this.mode === 'insert' ? null : this.$route.params.id
     },
@@ -399,11 +375,6 @@ export default {
     markImageToDelete () {
       this.formData.imageURL = 'delete'
       this.formData.imageFile = null
-    },
-
-    synonymsToLowerCase (value) {
-      if (this.formData)
-        this.formData.synonyms = value.map((item) => item.toLowerCase())
     },
 
     onImageChange (file) {
