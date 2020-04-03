@@ -79,7 +79,7 @@
                     hint="Dica: imagens quadradas de aproximadamente 600px para melhores resultados."
                     persistent-hint
                     truncate-length="50"
-                    accept="image/jpeg, image/png"
+                    accept=".jpg, .jpeg, .png"
                     @change="onImageChange"
                   />
                 </v-col>
@@ -98,7 +98,13 @@
                     max-width="180"
                     width="180"
                     height="180"
-                  />
+                  >
+                    <template #placeholder>
+                      <v-row class="fill-height ma-0" align="center" justify="center">
+                        <v-progress-circular indeterminate color="grey lighten-5" />
+                      </v-row>
+                    </template>
+                  </v-img>
 
                   <div class="ma-5 ml-6 mr-12 d-flex flex-column text-left">
                     <h1
@@ -106,7 +112,7 @@
                     >{{ formData.name || 'Categoria sem nome' }}</h1>
 
                     <p class="body-2 grey--text">
-                      <span>Produtos oferecidos: </span>
+                      <span>Produtos oferecidos:</span>
                       <strong class="body-1 font-weight-bold">{{ formData.usedBy || 0 }}</strong>
                     </p>
                   </div>
@@ -139,9 +145,10 @@ export default {
   async asyncData ({ app, params, store, redirect }) {
     const formData = {
       name: '',
+      synonyms: [],
+      usedBy: null,
       imageFile: null,
-      imageURL: null,
-      synonyms: []
+      imageURL: null
     }
 
     if (params && params.id) {
@@ -153,6 +160,7 @@ export default {
       if (doc.exists && doc.get('uid') === store.state.authUser.uid) {
         formData.name = doc.get('name')
         formData.synonyms = doc.get('synonyms')
+        formData.usedBy = doc.get('usedBy')
         formData.imageURL = doc.get('imageURL')
         if (formData.imageURL) {
           formData.imageURL = formData.imageURL.replace(
@@ -227,10 +235,16 @@ export default {
             : null
 
         if (this.formData.imageURL === 'delete') {
-          for (const size of imageSizes) {
-            await this.$fireStorage
-              .ref(`menuCategories/${doc.id}_${size}`)
-              .delete()
+          for (const size of ['', ...imageSizes]) {
+            const ref = this.$fireStorage.ref(`menuCategories/${doc.id}${size}`)
+            ref
+              .getDownloadURL()
+              .then(() => {
+                ref.delete()
+              })
+              .catch(() => {
+                return true
+              })
           }
 
           data.imageURL = null
@@ -246,15 +260,6 @@ export default {
           const downloadURL = await snapshot.ref.getDownloadURL()
           data.imageURL = downloadURL.split('?').join('_1000x1000?')
           this.formData.imageFile = doc.id
-
-          setTimeout(
-            () =>
-              (this.formData.imageURL = data.imageURL.replace(
-                '_1000x1000?',
-                '_400x400?'
-              )),
-            3000
-          )
         }
 
         await doc.set(data, { merge: true })
@@ -277,7 +282,12 @@ export default {
     },
 
     onImageChange (file) {
-      if (!file) {
+      if (
+        !file ||
+        !file.type ||
+        !['image/jpeg', 'image/png'].includes(file.type) ||
+        file.size > 2000000
+      ) {
         this.formData.imageURL = null
         return
       }

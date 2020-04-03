@@ -1,7 +1,7 @@
 const imageSizes = [
-  '1000x1000',
-  '400x400',
-  '50x50'
+  '_1000x1000',
+  '_400x400',
+  '_50x50'
 ]
 
 export default imageSizes

@@ -30,11 +30,17 @@
                       <v-avatar size="30px" class="mr-3">
                         <img
                           v-if="item.imageURL"
-                          :src="item.imageURL"
+                          :src="item.imageURL.replace('_1000x1000', '_50x50')"
                           max-width="50"
                           max-height="50"
                         />
-                        <v-icon v-else color="grey" v-text="item.name.charAt(1)"></v-icon>
+                        <v-icon
+                          v-else
+                          small
+                          dark
+                          class="grey text font-weight-medium"
+                          v-text="item.name.charAt(0)"
+                        />
                       </v-avatar>
 
                       <span>{{ item.name }}</span>
@@ -62,7 +68,7 @@
                         max-width="500"
                         transition="scroll-y-reverse-transition"
                       >
-                        <span>
+                        <p>
                           SKU (
                           <i>Stock Keeping Unit</i>), ou Unidade de Controle de Estoque.
                           Refere-se a um
@@ -71,7 +77,7 @@
                           <b>criado e gerenciado por você mesmo(a)</b>,
                           para facilitar a rápida identificação do item e simplificar a
                           integração com outros sistemas.
-                        </span>
+                        </p>
                         <template #activator="{ on }">
                           <v-icon class="help-icon info--text" v-on="on">mdi-help-circle</v-icon>
                         </template>
@@ -145,7 +151,7 @@
                     hint="Dica: imagens quadradas de aproximadamente 600px para melhores resultados."
                     persistent-hint
                     truncate-length="50"
-                    accept="image/jpeg, image/png"
+                    accept=".jpg, .jpeg, .png"
                     @change="onImageChange"
                   />
                 </v-col>
@@ -164,7 +170,13 @@
                     max-width="180"
                     width="180"
                     height="180"
-                  />
+                  >
+                    <template #placeholder>
+                      <v-row class="fill-height ma-0" align="center" justify="center">
+                        <v-progress-circular indeterminate color="grey lighten-5" />
+                      </v-row>
+                    </template>
+                  </v-img>
 
                   <div class="ma-5 ml-6 mr-12 d-flex flex-column text-left">
                     <h1
@@ -330,8 +342,16 @@ export default {
           : null
 
         if (this.formData.imageURL === 'delete') {
-          for (const size of imageSizes) {
-            await this.$fireStorage.ref(`menuItems/${doc.id}_${size}`).delete()
+          for (const size of ['', ...imageSizes]) {
+            const ref = this.$fireStorage.ref(`menuItems/${doc.id}${size}`)
+            ref
+              .getDownloadURL()
+              .then(() => {
+                ref.delete()
+              })
+              .catch(() => {
+                return true
+              })
           }
 
           data.imageURL = null
@@ -347,15 +367,6 @@ export default {
           const downloadURL = await snapshot.ref.getDownloadURL()
           data.imageURL = downloadURL.split('?').join('_1000x1000?')
           this.formData.imageFile = doc.id
-
-          setTimeout(
-            () =>
-              (this.formData.imageURL = data.imageURL.replace(
-                '_1000x1000?',
-                '_400x400?'
-              )),
-            3000
-          )
         }
 
         await doc.set(data, { merge: true })
@@ -378,7 +389,12 @@ export default {
     },
 
     onImageChange (file) {
-      if (!file) {
+      if (
+        !file ||
+        !file.type ||
+        !['image/jpeg', 'image/png'].includes(file.type) ||
+        file.size > 2000000
+      ) {
         this.formData.imageURL = null
         return
       }

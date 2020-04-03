@@ -238,8 +238,16 @@ export default {
         }
 
         if (doc.get('imageURL')) {
-          for (const size of imageSizes) {
-            await this.$fireStorage.ref(`menuItems/${doc.id}_${size}`).delete()
+          for (const size of ['', ...imageSizes]) {
+            const ref = this.$fireStorage.ref(`menuItems/${doc.id}${size}`)
+            ref
+              .getDownloadURL()
+              .then(() => {
+                ref.delete()
+              })
+              .catch(() => {
+                return true
+              })
           }
         }
 
