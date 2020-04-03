@@ -12,116 +12,123 @@
 
           <v-card-text class="pa-5 pt-3">
             <v-form ref="form" v-model.lazy="formValid">
-              <div>
-                <v-text-field
-                  ref="name"
-                  v-model="formData.name"
-                  :rules="formRules.name"
-                  label="Nome da categoria"
-                  hint="Informe o nome visível na listagem do menu (ex.: Bebidas)."
-                  persistent-hint
-                  type="text"
-                  autocomplete="off"
-                  class="pb-2"
-                  @keypress.enter="save"
-                />
+              <v-row>
+                <v-col cols="12" lg="5">
+                  <v-text-field
+                    ref="name"
+                    v-model="formData.name"
+                    :rules="formRules.name"
+                    label="Nome da categoria"
+                    hint="Nome visível na listagem do cardápio (ex.: Pizzas Grandes)."
+                    persistent-hint
+                    type="text"
+                    autocomplete="off"
+                    @keypress.enter="save"
+                  />
+                </v-col>
 
-                <v-combobox
-                  ref="synonyms"
-                  v-model="formData.synonyms"
-                  label="Sinônimos para pesquisa"
-                  hint="Escolha sinônimos opicionais que podem localizar esta categoria (ex.: Drinks, Cervejas, Refrigerantes)."
-                  persistent-hint
-                  multiple
-                  small-chips
-                  class="pb-2"
-                  :delimiters="[' ', ',', ';']"
-                  @keypress.enter="save"
-                  @input="synonymsToLowerCase"
-                >
-                  <template #selection="{ attrs, item, index, parent }">
-                    <v-chip
-                      v-bind="attrs"
-                      color="gray"
-                      label
-                      small
-                      close
-                      @click:close="parent.value.splice(index, 1)"
-                    >
-                      <span class="pr-2">{{ item }}</span>
-                    </v-chip>
-                  </template>
-                </v-combobox>
+                <v-col cols="12" lg="7">
+                  <v-combobox
+                    ref="synonyms"
+                    v-model="formData.synonyms"
+                    label="Sinônimos para pesquisa"
+                    hint="Sinônimos opicionais que podem localizar a categoria (ex.: pizzas, píteças, píteças grandes)."
+                    persistent-hint
+                    multiple
+                    hide-no-data
+                    append-icon
+                    small-chips
+                    :delimiters="[',', ';']"
+                    @keypress.enter="save"
+                    @input="synonymsToLowerCase"
+                  >
+                    <template #selection="{ attrs, item, index, parent }">
+                      <v-chip
+                        v-bind="attrs"
+                        color="gray"
+                        label
+                        small
+                        close
+                        @click:close="parent.value.splice(index, 1)"
+                      >
+                        <span class="pr-2">{{ item }}</span>
+                      </v-chip>
+                    </template>
+                  </v-combobox>
+                </v-col>
 
-                <v-card
-                  v-if="!formData.imageFile && formData.imageURL"
-                  class="grey lighten-3 mt-3 mb-1"
-                  width="280"
-                  :loading="formData.imageURL === 'loading'"
-                >
-                  <v-img
-                    v-if="formData.imageURL !== 'loading'"
-                    :src="formData.imageURL"
-                    height="240"
-                  ></v-img>
-                  <v-card-actions>
-                    <v-spacer />
-                    <v-btn small icon @click="markImageToDelete">
-                      <v-icon>mdi-delete</v-icon>
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-
-                <v-alert
-                  v-else-if="formData.imageFile === 'delete'"
-                  class="mt-3 mb-1"
-                  type="warning"
-                >
-                  <span>Confirme para remover definitivamente esta imagem.</span>
-                </v-alert>
-
-                <div v-else>
-                  <v-file-input
+                <v-col cols="12">
+                  <v-text-field
+                    v-if="typeof formData.imageFile === 'string'"
                     v-model="formData.imageFile"
                     label="Arquivo de imagem"
                     hint="Dica: imagens quadradas de aproximadamente 600px para melhores resultados."
                     persistent-hint
+                    prepend-icon="mdi-paperclip"
+                    clearable
+                    readonly
+                    @keydown.delete="markImageToDelete"
+                    @click:clear="markImageToDelete"
+                  />
+                  <v-file-input
+                    v-else
+                    v-model="formData.imageFile"
                     :rules="formRules.imageFile"
                     show-size
+                    label="Arquivo de imagem"
+                    hint="Dica: imagens quadradas de aproximadamente 600px para melhores resultados."
+                    persistent-hint
                     truncate-length="50"
                     accept="image/jpeg, image/png"
-                    class="pt-2"
+                    @change="onImageChange"
                   />
-                </div>
-              </div>
-
-              <div>
-                <v-btn
-                  color="primary black--text"
-                  class="pl-4 pr-4 mt-6 mr-2"
-                  :loading="loading"
-                  @click="save"
-                >
-                  <v-icon class="ma-0 mr-2 text--secondary">mdi-check-circle</v-icon>
-                  <span>Confirmar</span>
-                </v-btn>
-
-                <v-btn text class="pl-4 pr-4 mt-6" nuxt exact to="/categorias-cardapio">
-                  <v-icon class="ma-0 mr-2 text--secondary">mdi-chevron-left</v-icon>
-                  <span>Voltar</span>
-                </v-btn>
-              </div>
+                </v-col>
+              </v-row>
             </v-form>
+
+            <v-row align="center" justify="center" class="item-preview">
+              <v-col cols="12" sm="11" md="10" lg="9" align="center">
+                <span class="overline">Pré-visualização</span>
+
+                <v-card class="mt-3 mb-1 d-flex" color="grey lighten-5" height="180">
+                  <v-img
+                    v-if="formData.imageURL && formData.imageURL !== 'delete'"
+                    :src="formData.imageURL"
+                    :lazy-src="formData.imageURL && formData.imageURL.startsWith('http') ? formData.imageURL.replace('_400x400', '_50x50') : formData.imageURL"
+                    max-width="180"
+                    width="180"
+                    height="180"
+                  />
+
+                  <div class="ma-5 ml-6 mr-12 d-flex flex-column text-left">
+                    <h1
+                      class="headline font-weight-bold mb-2"
+                    >{{ formData.name || 'Categoria sem nome' }}</h1>
+
+                    <p class="body-2 grey--text">
+                      <span>Produtos oferecidos: </span>
+                      <strong class="body-1 font-weight-bold">{{ formData.usedBy || 0 }}</strong>
+                    </p>
+                  </div>
+                </v-card>
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card>
       </v-col>
     </v-row>
+
+    <v-fab-transition mode="out-in">
+      <v-btn fab fixed bottom right dark :color="fabColor" :loading="loading" @click="save">
+        <v-icon>mdi-content-save</v-icon>
+      </v-btn>
+    </v-fab-transition>
   </v-container>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import { getMessage } from '@/helpers/messages'
+import imageSizes from '@/helpers/image-sizes'
 import rules from '@/helpers/validation-rules'
 import restrictGuests from '@/mixins/restrict-guests'
 
@@ -147,6 +154,13 @@ export default {
         formData.name = doc.get('name')
         formData.synonyms = doc.get('synonyms')
         formData.imageURL = doc.get('imageURL')
+        if (formData.imageURL) {
+          formData.imageURL = formData.imageURL.replace(
+            '_1000x1000',
+            '_400x400'
+          )
+          formData.imageFile = doc.id
+        }
       } else {
         return redirect('/categorias-cardapio/incluir')
       }
@@ -163,14 +177,16 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['authUser']),
-
     id () {
       return this.mode === 'insert' ? null : this.$route.params.id
     },
 
     mode () {
       return this.$route.params.id ? 'edit' : 'insert'
+    },
+
+    fabColor () {
+      return this.mode === 'insert' ? 'green darken-2' : 'indigo'
     },
 
     formRules () {
@@ -210,32 +226,42 @@ export default {
             ? this.formData.synonyms
             : null
 
-        if (this.formData.imageFile) {
-          if (this.formData.imageFile === 'delete') {
-            const refName = `menuCategories/${doc.id}_1024x1024`
-            await this.$fireStorage.ref(refName).delete()
-            data.imageURL = null
-            this.formData.imageURL = null
-          } else {
-            const refName = `menuCategories/${doc.id}`
-            const storage = this.$fireStorage.ref(refName)
-            const snapshot = await storage.put(this.formData.imageFile)
-            const downloadURL = await snapshot.ref.getDownloadURL()
-            data.imageURL = downloadURL.split('?').join('_1024x1024?')
-            this.formData.imageURL = 'loading'
+        if (this.formData.imageURL === 'delete') {
+          for (const size of imageSizes) {
+            await this.$fireStorage
+              .ref(`menuCategories/${doc.id}_${size}`)
+              .delete()
           }
 
+          data.imageURL = null
+          this.formData.imageURL = null
           this.formData.imageFile = null
-          this.$refs.form.resetValidation()
+        } else if (
+          this.formData.imageFile &&
+          typeof this.formData.imageFile === 'object'
+        ) {
+          const refName = `menuCategories/${doc.id}`
+          const storage = this.$fireStorage.ref(refName)
+          const snapshot = await storage.put(this.formData.imageFile)
+          const downloadURL = await snapshot.ref.getDownloadURL()
+          data.imageURL = downloadURL.split('?').join('_1000x1000?')
+          this.formData.imageFile = doc.id
+
+          setTimeout(
+            () =>
+              (this.formData.imageURL = data.imageURL.replace(
+                '_1000x1000?',
+                '_400x400?'
+              )),
+            3000
+          )
         }
 
         await doc.set(data, { merge: true })
         this.$snackbar.showMessage(getMessage('save-success'), 'success')
 
-        if (this.formData.imageURL === 'loading') {
-          setTimeout(() => {
-            this.formData.imageURL = data.imageURL
-          }, 3000)
+        if (this.mode === 'insert') {
+          this.$router.push('/categorias-cardapio')
         }
       } catch (error) {
         console.error(error)
@@ -246,7 +272,19 @@ export default {
     },
 
     markImageToDelete () {
-      this.formData.imageFile = 'delete'
+      this.formData.imageURL = 'delete'
+      this.formData.imageFile = null
+    },
+
+    onImageChange (file) {
+      if (!file) {
+        this.formData.imageURL = null
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onload = (e) => (this.formData.imageURL = e.target.result)
+      reader.readAsDataURL(file)
     },
 
     synonymsToLowerCase (value) {

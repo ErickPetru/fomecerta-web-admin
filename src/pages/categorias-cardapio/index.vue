@@ -122,6 +122,7 @@
 
 <script>
 import { getMessage } from '@/helpers/messages'
+import imageSizes from '@/helpers/image-sizes'
 import restrictGuests from '@/mixins/restrict-guests'
 
 export default {
@@ -206,9 +207,10 @@ export default {
           return false
         }
 
-        if (doc.data().imageURL) {
-          const refName = `menuCategories/${doc.id}_1024x1024`
-          await this.$fireStorage.ref(refName).delete()
+        if (doc.get('imageURL')) {
+          for (const size of imageSizes) {
+            await this.$fireStorage.ref(`menuItems/${doc.id}_${size}`).delete()
+          }
         }
 
         await this.$fireStore
@@ -216,10 +218,8 @@ export default {
           .doc(doc.id)
           .delete()
 
-        this.items.splice(
-          this.items.indexOf((item) => item.id === doc.id),
-          1
-        )
+        const indexOf = this.items.indexOf((item) => item.id === doc.id)
+        this.items.splice(indexOf, 1)
         this.selectedItem = null
 
         this.$snackbar.showMessage(getMessage('remove-success'), 'success')
