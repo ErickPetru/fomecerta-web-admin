@@ -88,7 +88,20 @@
 
             <v-row align="center" justify="center" class="item-preview">
               <v-col cols="12" sm="11" md="10" lg="9" align="center">
-                <span class="overline">Pré-visualização</span>
+                <v-tooltip
+                  top
+                  color="info"
+                  max-width="550"
+                  transition="scroll-y-reverse-transition"
+                >
+                  <p>Abaixo você encontra uma simulação de como seu cliente verá esta categoria do seu cardápio no aplicativo para consumidores. Garanta que as informações que você está preenchendo estão entregando o resultado desejado.</p>
+                  <template #activator="{ on }">
+                    <span class="help-icon" v-on="on">
+                      <span class="overline">Pré-visualização</span>
+                      <v-icon small class="info--text" v-on="on">mdi-help-circle</v-icon>
+                    </span>
+                  </template>
+                </v-tooltip>
 
                 <v-card class="mt-3 mb-1 d-flex" color="grey lighten-5" height="180">
                   <v-img
@@ -112,7 +125,7 @@
                     >{{ formData.name || 'Categoria sem nome' }}</h1>
 
                     <p class="body-2 grey--text">
-                      <span>Produtos oferecidos:</span>
+                      <span>Quantidade de opções:</span>
                       <strong class="body-1 font-weight-bold">{{ formData.usedBy || 0 }}</strong>
                     </p>
                   </div>
