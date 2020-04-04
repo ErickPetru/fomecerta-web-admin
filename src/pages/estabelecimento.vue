@@ -111,7 +111,7 @@
               </v-stepper-content>
 
               <v-stepper-step :complete="stepper > 3" :step="3" :editable="formGeneralValid">
-                <span>Endereço e localização</span>
+                <span>Endereço</span>
                 <small>Informe onde seu estabelecimento se encontra fisicamente</small>
               </v-stepper-step>
 
@@ -223,11 +223,52 @@
               </v-stepper-content>
 
               <v-stepper-step :complete="stepper > 4" :step="4" :editable="formGeneralValid">
+                <span>Geolocalização</span>
+                <small>Informe com precisão o posicionamento geográfico do estabelecimento</small>
+              </v-stepper-step>
+
+              <v-stepper-content :step="4">
+                <v-form ref="formGeolocation" v-model.lazy="formGeolocationValid" class="pb-4">
+                  <v-row>
+                    <v-col cols="12" md="6" class="pt-0">
+                      <v-text-field
+                        ref="geolocationLat"
+                        v-model.number="formData.geolocation.latitude"
+                        v-mask="{ mask: '?#???######', tokens: { '#': { pattern: /\d/ }, '?': { pattern: /[\d-+.]/ } } }"
+                        :rules="formRules.geolocation.latitude"
+                        label="Latitude"
+                        hint="Latitude geográfica do estabelecimento."
+                        persistent-hint
+                        type="text"
+                        autocomplete="off"
+                        @keypress.enter="save"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="6" class="pt-0">
+                      <v-text-field
+                        ref="geolocationLong"
+                        v-model.number="formData.geolocation.longitude"
+                        v-mask="{ mask: '?#???######', tokens: { '#': { pattern: /\d/ }, '?': { pattern: /[\d-+.]/ } } }"
+                        :rules="formRules.geolocation.longitude"
+                        label="Longitude"
+                        hint="Longitude geográfica do estabelecimento."
+                        persistent-hint
+                        type="text"
+                        autocomplete="off"
+                        @keypress.enter="save"
+                      />
+                    </v-col>
+                  </v-row>
+                </v-form>
+              </v-stepper-content>
+
+              <v-stepper-step :complete="stepper > 5" :step="5" :editable="formGeneralValid">
                 <span>Horários de funcionamento</span>
                 <small>Selecione os dias e preencha com os horários de cada dia</small>
               </v-stepper-step>
 
-              <v-stepper-content :step="4" class="pb-2">
+              <v-stepper-content :step="5" class="pb-2">
                 <v-form ref="formActiveDays" v-model.lazy="formActiveDaysValid" class="ml-n8">
                   <v-list class="active-days pt-1">
                     <v-list-item
@@ -496,6 +537,13 @@ export default {
               city: 'Taquaritinga',
               state: 'SP'
             },
+      geolocation:
+        establishment && establishment.geolocation
+          ? establishment.geolocation
+          : {
+              latitude: '',
+              longitude: ''
+            },
       activeDays
     }
 
@@ -516,6 +564,7 @@ export default {
       formGeneralValid: false,
       formImageValid: false,
       formAddressValid: false,
+      formGeolocationValid: false,
       formActiveDaysValid: false,
       defaultHours: [],
       states: brazilianStates,
@@ -533,7 +582,8 @@ export default {
         imageFile: rules.singleImageUpload,
         timeStart: rules.required,
         timeEnd: rules.required,
-        address: rules.address
+        address: rules.address,
+        geolocation: rules.geolocation
       }
     },
 
@@ -587,9 +637,10 @@ export default {
     async save () {
       if (this.stepper === 1 && !this.$refs.formGeneral.validate()) return false
       if (this.stepper === 2 && !this.$refs.formImage.validate()) return false
-      if (this.stepper === 3 && !this.$refs.formAddress.validate())
+      if (this.stepper === 3 && !this.$refs.formAddress.validate()) return false
+      if (this.stepper === 4 && !this.$refs.formGeolocation.validate())
         return false
-      if (this.stepper === 4 && !this.$refs.formActiveDays.validate()) {
+      if (this.stepper === 5 && !this.$refs.formActiveDays.validate()) {
         this.$snackbar.showMessage(
           'É necessário preencher todos os horários de atendimento.',
           'error'
@@ -649,8 +700,21 @@ export default {
             this.formData.imageFile = doc.id
           }
         } else if (this.stepper === 3) {
-          data.address = this.formData.address
+          data.address = {
+            zipCode: this.formData.address.zipCode,
+            street: this.formData.address.street,
+            number: this.formData.address.number || null,
+            complement: this.formData.address.complement || null,
+            district: this.formData.address.district,
+            city: this.formData.address.city,
+            state: this.formData.address.state
+          }
         } else if (this.stepper === 4) {
+          data.geolocation = {
+            latitude: this.formData.geolocation.latitude,
+            longitude: this.formData.geolocation.longitude
+          }
+        } else if (this.stepper === 5) {
           data.activeDays = this.formData.activeDays
             .filter((item) => !!item.active)
             .map((item) => ({
@@ -662,7 +726,7 @@ export default {
 
         await doc.set(data, { merge: true })
 
-        if (this.stepper < 4) this.stepper++
+        if (this.stepper < 5) this.stepper++
         this.$snackbar.showMessage(getMessage('save-success'), 'success')
       } catch (error) {
         console.error(error)

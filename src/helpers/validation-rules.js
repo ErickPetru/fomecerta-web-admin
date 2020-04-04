@@ -34,6 +34,16 @@ export default {
       (value) => !value || value.length > 3 || 'Por favor, informe um valor válido.'
     ]
   },
+  geolocation: {
+    latitude: [
+      (value) => !!value || 'Preenchimento obrigatório.',
+      (value) => !value || value.toString().length > 5 || (value > -91 && value < 91) || 'Por favor, informe um valor válido.'
+    ],
+    longitude: [
+      (value) => !!value || 'Preenchimento obrigatório.',
+      (value) => !value || value.toString().length > 5|| (value > -181 && value < 181) || 'Por favor, informe um valor válido.'
+    ]
+  },
   email: [
     (value) => !!value || 'É necessário informar seu e-mail.',
     (value) => /.+@.+\..+/.test(value) || 'Por favor, informe um e-mail válido.'
