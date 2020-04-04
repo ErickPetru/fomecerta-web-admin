@@ -14,8 +14,8 @@ export default {
   ],
   singleImageUploadRequired: [
     (value) => !!value || 'É necessário preencher este campo.',
-    (value) => typeof value === 'string' || ['image/jpeg', 'image/png'].includes(value.type) || 'Somente os formatos JPG e PNG são aceitos para o envio da imagem.',
-    (value) => typeof value === 'string' || value.size <= 2000000 || 'O arquivo selecionado deve ter um tamanho máximo de 2 MB.'
+    (value) => !value || typeof value === 'string' || ['image/jpeg', 'image/png'].includes(value.type) || 'Somente os formatos JPG e PNG são aceitos para o envio da imagem.',
+    (value) => !value || typeof value === 'string' || value.size <= 2000000 || 'O arquivo selecionado deve ter um tamanho máximo de 2 MB.'
   ],
   sku: [
     (value) => !value || value.length < 18 || 'Não utilize mais do que 18 caracteres para o SKU.',

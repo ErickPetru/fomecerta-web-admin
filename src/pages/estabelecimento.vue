@@ -10,8 +10,8 @@
             <v-toolbar-title class="pa-0">{{ $metaInfo.title }}</v-toolbar-title>
           </v-toolbar>
 
-          <v-card-text class="pa-0">
-            <v-stepper v-model="stepper" vertical>
+          <v-card-text class="pt-0 pl-0 pr-0">
+            <v-stepper v-model="stepper" vertical class="elevation-0">
               <v-stepper-step :complete="stepper > 1" :step="1" editable>
                 <span>Informações gerais</span>
                 <small>Preencha com as informações gerais do estabelecimento</small>
@@ -25,7 +25,7 @@
                       v-model="formData.name"
                       :rules="formRules.name"
                       label="Nome do estabelecimento"
-                      hint="Informe o nome oficial, visível ao público."
+                      hint="Nome oficial visível ao público em geral."
                       persistent-hint
                       type="text"
                       autocomplete="off"
@@ -39,7 +39,7 @@
                       :rules="formRules.types"
                       :items="establishmentTypes"
                       label="Tipo de estabelecimento"
-                      hint="É possível escolher mais de um tipo, se desejado."
+                      hint="Um ou mais tipos que definem o estabelecimento."
                       persistent-hint
                       multiple
                       class="pb-2"
@@ -65,25 +65,13 @@
                         v-currency
                         :rules="formRules.deliveryPrice"
                         label="Preço por entrega"
-                        hint="Informe o preço fixo para entrega."
+                        hint="Preço fixo por entrega."
                         persistent-hint
                         autocomplete="off"
                         @keypress.enter="save"
                       />
                       <v-text-field v-else label="Preço por entrega" disabled />
                     </v-row>
-                  </div>
-
-                  <div>
-                    <v-btn
-                      color="primary black--text"
-                      class="pl-4 pr-4 mt-2"
-                      :loading="loading"
-                      @click="save"
-                    >
-                      <v-icon class="ma-0 mr-2 text--secondary">mdi-check-circle</v-icon>
-                      <span>Confirmar</span>
-                    </v-btn>
                   </div>
                 </v-form>
               </v-stepper-content>
@@ -95,59 +83,30 @@
 
               <v-stepper-content :step="2">
                 <v-form ref="formImage" v-model="formImageValid" class="pb-4">
-                  <v-card
-                    v-if="!formData.imageFile && formData.imageURL"
-                    class="grey lighten-3 elevation-0 mb-4"
-                  >
-                    <v-img :src="formData.imageURL" max-height="180" aspect-ratio="1" contain />
-
-                    <v-btn
-                      fab
-                      absolute
-                      small
-                      bottom
-                      right
-                      color="accent"
-                      @click="markImageToDelete"
-                    >
-                      <v-icon>mdi-delete</v-icon>
-                    </v-btn>
-                  </v-card>
-
-                  <v-alert v-else-if="formData.imageFile === 'delete'" type="warning">
-                    <span>Confirme para remover definitivamente esta imagem.</span>
-                  </v-alert>
-
-                  <div v-else>
-                    <v-file-input
-                      v-model="formData.imageFile"
-                      label="Arquivo de imagem"
-                      hint="Dica: imagens com aproximadamente 1000px de largura para melhores resultados."
-                      persistent-hint
-                      :rules="formRules.imageFile"
-                      show-size
-                      truncate-length="50"
-                      accept="image/jpeg, image/png"
-                      class="pt-2"
-                    />
-                  </div>
-
-                  <div>
-                    <v-btn
-                      color="primary black--text"
-                      class="pl-4 pr-4 mt-4 mr-2"
-                      :loading="loading"
-                      @click="save"
-                    >
-                      <v-icon class="ma-0 mr-2 text--secondary">mdi-check-circle</v-icon>
-                      <span>Confirmar</span>
-                    </v-btn>
-
-                    <v-btn text class="pl-4 pr-4 mt-4" @click="recoverImageAndGoBack">
-                      <v-icon class="ma-0 mr-2 text--secondary">mdi-chevron-left</v-icon>
-                      <span>Voltar</span>
-                    </v-btn>
-                  </div>
+                  <v-text-field
+                    v-if="typeof formData.imageFile === 'string'"
+                    v-model="formData.imageFile"
+                    label="Arquivo de imagem"
+                    hint="Dica: imagens quadradas de aproximadamente 600px para melhores resultados."
+                    persistent-hint
+                    prepend-icon="mdi-paperclip"
+                    clearable
+                    readonly
+                    @keydown.delete="markImageToDelete"
+                    @click:clear="markImageToDelete"
+                  />
+                  <v-file-input
+                    v-else
+                    v-model="formData.imageFile"
+                    :rules="formRules.imageFile"
+                    show-size
+                    label="Arquivo de imagem"
+                    hint="Dica: imagens quadradas de aproximadamente 600px para melhores resultados."
+                    persistent-hint
+                    truncate-length="50"
+                    accept=".jpg, .jpeg, .png"
+                    @change="onImageChange"
+                  />
                 </v-form>
               </v-stepper-content>
 
@@ -227,38 +186,118 @@
                       </v-list-item-content>
                     </v-list-item>
                   </v-list>
-
-                  <div>
-                    <v-btn
-                      color="primary black--text"
-                      class="pl-4 pr-4 mt-2 mr-2"
-                      :loading="loading"
-                      @click="save"
-                    >
-                      <v-icon class="ma-0 mr-2 text--secondary">mdi-check-circle</v-icon>
-                      <span>Confirmar</span>
-                    </v-btn>
-
-                    <v-btn text class="pl-4 pr-4 mt-2" @click="stepper = 2">
-                      <v-icon class="ma-0 mr-2 text--secondary">mdi-chevron-left</v-icon>
-                      <span>Voltar</span>
-                    </v-btn>
-                  </div>
                 </v-form>
               </v-stepper-content>
             </v-stepper>
+
+            <v-row align="center" justify="center" class="item-preview">
+              <v-col cols="12" sm="11" md="10" lg="9" align="center">
+                <v-tooltip
+                  top
+                  color="info"
+                  max-width="550"
+                  transition="scroll-y-reverse-transition"
+                >
+                  <p>Abaixo você encontra uma simulação de como seu cliente verá seu estabelecimento no aplicativo para consumidores. Garanta que as informações que você está preenchendo estão entregando o resultado desejado.</p>
+                  <template #activator="{ on }">
+                    <span class="help-icon" v-on="on">
+                      <span class="overline">Pré-visualização</span>
+                      <v-icon small class="info--text" v-on="on">mdi-help-circle</v-icon>
+                    </span>
+                  </template>
+                </v-tooltip>
+
+                <v-card class="mt-3 mb-1 d-flex" color="grey lighten-5" height="180">
+                  <v-img
+                    v-if="formData.imageURL && formData.imageURL !== 'delete'"
+                    :src="formData.imageURL"
+                    :lazy-src="formData.imageURL && formData.imageURL.startsWith('http') ? formData.imageURL.replace('_400x400', '_50x50') : formData.imageURL"
+                    max-width="180"
+                    width="180"
+                    height="180"
+                  >
+                    <v-overlay
+                      v-if="!isOpenToday"
+                      absolute
+                      opacity=".75"
+                      color="red accent-4"
+                      class="white--text body-1 font-weight-bold"
+                      style="mix-blend-mode: hard-light"
+                    >
+                    Fechado
+                    </v-overlay>
+                    <template #placeholder>
+                      <v-row class="fill-height ma-0" align="center" justify="center">
+                        <v-progress-circular indeterminate color="grey lighten-5" />
+                      </v-row>
+                    </template>
+                  </v-img>
+                  <v-avatar
+                    v-else-if="!isOpenToday"
+                    tile
+                    max-width="180"
+                    width="180"
+                    height="180"
+                    color="red accent-4"
+                    class="white--text body-1 font-weight-bold"
+                    style="opacity: .75"
+                  >Fechado</v-avatar>
+                  <v-avatar
+                    v-else
+                    tile
+                    max-width="180"
+                    width="180"
+                    height="180"
+                    color="grey lighten-3"
+                  />
+
+                  <div class="ma-5 ml-6 mr-12 d-flex flex-column text-left">
+                    <h1
+                      class="headline font-weight-bold mb-2"
+                    >{{ formData.name || 'Estabelecimento sem nome' }}</h1>
+                    <p class="body-2 grey--text mb-auto">{{ typesDescription }}</p>
+
+                    <p v-if="formData.deliveryEnabled" class="body-2 grey--text mt-auto mb-0">
+                      <span>Realiza entregas:</span>
+                      <strong
+                        v-if="deliveryPriceRaw === 0"
+                        class="body-1 font-weight-bold red--text"
+                      >Grátis!</strong>
+                      <strong v-else class="body-1 font-weight-bold">Sim</strong>
+                    </p>
+                  </div>
+                </v-card>
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card>
       </v-col>
     </v-row>
+
+    <v-fab-transition mode="out-in">
+      <v-btn fab fixed bottom right dark color="indigo" :loading="loading" @click="save">
+        <v-icon>mdi-content-save</v-icon>
+      </v-btn>
+    </v-fab-transition>
   </v-container>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import { getMessage } from '@/helpers/messages'
+import imageSizes from '@/helpers/image-sizes'
 import rules from '@/helpers/validation-rules'
 import restrictGuests from '@/mixins/restrict-guests'
+
+const weekdays = [
+  { day: 'seg', fullName: 'Segunda-feira' },
+  { day: 'ter', fullName: 'Terça-feira' },
+  { day: 'qua', fullName: 'Quarta-feira' },
+  { day: 'qui', fullName: 'Quinta-feira' },
+  { day: 'sex', fullName: 'Sexta-feira' },
+  { day: 'sab', fullName: 'Sábado' },
+  { day: 'dom', fullName: 'Domingo' }
+]
 
 async function getEstablishmentTypes ($fireStore) {
   const snapshot = await $fireStore
@@ -301,18 +340,8 @@ export default {
       store.state.authUser
     )
 
-    const weekdays = [
-      { day: 'seg', fullName: 'Segunda-feira' },
-      { day: 'ter', fullName: 'Terça-feira' },
-      { day: 'qua', fullName: 'Quarta-feira' },
-      { day: 'qui', fullName: 'Quinta-feira' },
-      { day: 'sex', fullName: 'Sexta-feira' },
-      { day: 'sab', fullName: 'Sábado' },
-      { day: 'dom', fullName: 'Domingo' }
-    ]
-
     const activeDays = weekdays.map((weekday) => {
-      if (establishment) {
+      if (establishment && establishment.activeDays) {
         const activeDay = establishment.activeDays.find(
           (item) => item.day === weekday.day
         )
@@ -333,27 +362,35 @@ export default {
       }
     })
 
+    const formData = {
+      name: establishment ? establishment.name : '',
+      types: establishment ? establishment.types : '',
+      imageFile: null,
+      imageURL: establishment ? establishment.imageURL : '',
+      deliveryEnabled: establishment ? establishment.deliveryEnabled : false,
+      deliveryPrice: establishment ? establishment.deliveryPrice : '',
+      activeDays
+    }
+
+    if (formData.imageURL) {
+      formData.imageURL = formData.imageURL.replace('_1000x1000', '_400x400')
+      formData.imageFile = establishment.id
+    }
+
     return {
       establishmentTypes,
-      formData: {
-        name: establishment ? establishment.name : '',
-        types: establishment ? establishment.types : '',
-        imageFile: null,
-        imageURL: establishment ? establishment.imageURL : '',
-        deliveryEnabled: establishment ? establishment.deliveryEnabled : false,
-        deliveryPrice: establishment ? establishment.deliveryPrice : '',
-        activeDays
-      }
+      formData
     }
   },
   data () {
     return {
       stepper: 1,
-      loading: false,
+      loading: true,
       formGeneralValid: false,
       formImageValid: false,
       formActiveDaysValid: false,
-      defaultHours: []
+      defaultHours: [],
+      weekdays
     }
   },
   computed: {
@@ -364,14 +401,48 @@ export default {
         name: rules.required,
         types: rules.required,
         deliveryPrice: rules.required,
-        imageFile: rules.singleImageUploadRequired,
+        imageFile: rules.singleImageUpload,
         timeStart: rules.required,
         timeEnd: rules.required
       }
     },
 
-    deliveryPrice () {
-      return this.$parseCurrency(this.formData.deliveryPrice) || null
+    deliveryPriceFormmated () {
+      if (!this.formData.deliveryPrice) return 'Indisponível'
+      else if (this.formData.deliveryPrice.startsWith('R$'))
+        return this.formData.deliveryPrice
+      else return `R$ ${this.formData.deliveryPrice}`
+    },
+
+    deliveryPriceRaw () {
+      const rawValue = this.$parseCurrency(this.formData.deliveryPrice)
+      return rawValue === 0 ? rawValue : rawValue || null
+    },
+
+    typesDescription () {
+      if (!this.formData.types) return 'Sem tipo definido'
+      else {
+        const names = this.establishmentTypes
+          .filter((item) => this.formData.types.includes(item.id))
+          .map((item) => item.name)
+
+        return names.join(', ').replace(/,(?=[^,]*$)/, ' e')
+      }
+    },
+
+    currentWeekday () {
+      const currentDay = new Date().getDay()
+      return this.weekdays[currentDay - 1] || this.weekdays[6]
+    },
+
+    isOpenToday () {
+      if (!this.formData.activeDays) {
+        return false
+      } else {
+        return !!this.formData.activeDays.find(
+          (item) => item.active && item.day === this.currentWeekday.day
+        )
+      }
     }
   },
   mounted () {
@@ -379,6 +450,8 @@ export default {
       const hour = i.toString().padStart(2, '0')
       this.defaultHours.push(hour + ':00')
     }
+
+    this.loading = false
   },
   methods: {
     async save () {
@@ -412,27 +485,37 @@ export default {
           data.name = this.formData.name || null
           data.types = this.formData.types.length ? this.formData.types : null
           data.deliveryEnabled = this.formData.deliveryEnabled
-          data.deliveryPrice = this.deliveryPrice
+          data.deliveryPrice = this.deliveryPriceRaw
+        } else if (this.stepper === 2) {
+          if (this.formData.imageURL === 'delete') {
+            for (const size of ['', ...imageSizes]) {
+              const ref = this.$fireStorage.ref(
+                `establishments/${doc.id}${size}`
+              )
+              ref
+                .getDownloadURL()
+                .then(() => {
+                  ref.delete()
+                })
+                .catch(() => {
+                  return true
+                })
+            }
 
-          await doc.set(data, { merge: true })
-        } else if (this.stepper === 2 && this.formData.imageFile) {
-          if (this.formData.imageFile === 'delete') {
-            const refName = `establishments/${doc.id}_1024x1024`
-            await this.$fireStorage.ref(refName).delete()
             data.imageURL = null
-          } else {
+            this.formData.imageURL = null
+            this.formData.imageFile = null
+          } else if (
+            this.formData.imageFile &&
+            typeof this.formData.imageFile === 'object'
+          ) {
             const refName = `establishments/${doc.id}`
             const storage = this.$fireStorage.ref(refName)
             const snapshot = await storage.put(this.formData.imageFile)
             const downloadURL = await snapshot.ref.getDownloadURL()
-            data.imageURL = downloadURL.split('?').join('_1024x1024?')
+            data.imageURL = downloadURL.split('?').join('_1000x1000?')
+            this.formData.imageFile = doc.id
           }
-
-          this.formData.imageURL = data.imageURL
-          this.formData.imageFile = null
-          this.$refs.formImage.resetValidation()
-
-          await doc.set(data, { merge: true })
         } else if (this.stepper === 3) {
           data.activeDays = this.formData.activeDays
             .filter((item) => !!item.active)
@@ -441,9 +524,9 @@ export default {
               timeStart: item.timeStart,
               timeEnd: item.timeEnd || null
             }))
-
-          await doc.set(data, { merge: true })
         }
+
+        await doc.set(data, { merge: true })
 
         if (this.stepper < 3) this.stepper++
         this.$snackbar.showMessage(getMessage('save-success'), 'success')
@@ -456,12 +539,24 @@ export default {
     },
 
     markImageToDelete () {
-      this.formData.imageFile = 'delete'
+      this.formData.imageURL = 'delete'
+      this.formData.imageFile = null
     },
 
-    recoverImageAndGoBack () {
-      this.formData.imageFile = null
-      this.stepper--
+    onImageChange (file) {
+      if (
+        !file ||
+        !file.type ||
+        !['image/jpeg', 'image/png'].includes(file.type) ||
+        file.size > 2000000
+      ) {
+        this.formData.imageURL = null
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onload = (e) => (this.formData.imageURL = e.target.result)
+      reader.readAsDataURL(file)
     },
 
     clearTimes (day) {
