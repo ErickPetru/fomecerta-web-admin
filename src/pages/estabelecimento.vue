@@ -87,7 +87,7 @@
                     v-if="typeof formData.imageFile === 'string'"
                     v-model="formData.imageFile"
                     label="Arquivo de imagem"
-                    hint="Dica: imagens quadradas de aproximadamente 600px para melhores resultados."
+                    hint="Dica: imagens quadradas de aproximadamente 800px para melhores resultados."
                     persistent-hint
                     prepend-icon="mdi-paperclip"
                     clearable
@@ -101,7 +101,7 @@
                     :rules="formRules.imageFile"
                     show-size
                     label="Arquivo de imagem"
-                    hint="Dica: imagens quadradas de aproximadamente 600px para melhores resultados."
+                    hint="Dica: imagens quadradas de aproximadamente 800px para melhores resultados."
                     persistent-hint
                     truncate-length="50"
                     accept=".jpg, .jpeg, .png"
