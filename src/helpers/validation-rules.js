@@ -1,6 +1,6 @@
 export default {
   required: [
-    (value) => (!!value && (!!value.length || typeof value === 'object')) || 'É necessário preencher este campo.'
+    (value) => (!!value && (!!value.length || typeof value === 'object')) || 'Preenchimento obrigatório.'
   ],
   fullName: [
     (value) => !!value || 'É necessário informar seu nome.',
@@ -13,13 +13,27 @@ export default {
     (value) => !value || typeof value === 'string' || value.size <= 2000000 || 'O arquivo selecionado deve ter um tamanho máximo de 2 MB.'
   ],
   singleImageUploadRequired: [
-    (value) => !!value || 'É necessário preencher este campo.',
+    (value) => !!value || 'Preenchimento obrigatório.',
     (value) => !value || typeof value === 'string' || ['image/jpeg', 'image/png'].includes(value.type) || 'Somente os formatos JPG e PNG são aceitos para o envio da imagem.',
     (value) => !value || typeof value === 'string' || value.size <= 2000000 || 'O arquivo selecionado deve ter um tamanho máximo de 2 MB.'
   ],
   sku: [
     (value) => !value || value.length < 18 || 'Não utilize mais do que 18 caracteres para o SKU.',
   ],
+  address: {
+    zipCode: [
+      (value) => !!value || 'Preenchimento obrigatório.',
+      (value) => !value || value.length === 9 || /\d{5}-\d{3}/g.test(value) || 'Por favor, informe um valor válido.'
+    ],
+    street: [
+      (value) => !!value || 'Preenchimento obrigatório.',
+      (value) => !value || value.length > 3 || 'Por favor, informe um valor válido.'
+    ],
+    district: [
+      (value) => !!value || 'Preenchimento obrigatório.',
+      (value) => !value || value.length > 3 || 'Por favor, informe um valor válido.'
+    ]
+  },
   email: [
     (value) => !!value || 'É necessário informar seu e-mail.',
     (value) => /.+@.+\..+/.test(value) || 'Por favor, informe um e-mail válido.'

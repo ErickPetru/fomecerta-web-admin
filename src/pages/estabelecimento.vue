@@ -111,11 +111,123 @@
               </v-stepper-content>
 
               <v-stepper-step :complete="stepper > 3" :step="3" :editable="formGeneralValid">
+                <span>Endereço e localização</span>
+                <small>Informe onde seu estabelecimento se encontra fisicamente</small>
+              </v-stepper-step>
+
+              <v-stepper-content :step="3">
+                <v-form ref="formAddress" v-model.lazy="formAddressValid" class="pb-4">
+                  <v-row>
+                    <v-col cols="12" sm="6" md="4" lg="3" class="pt-0">
+                      <v-text-field
+                        ref="addressZipCode"
+                        v-model="formData.address.zipCode"
+                        v-mask="'#####-###'"
+                        :rules="formRules.address.zipCode"
+                        label="CEP"
+                        hint="Código de endereçamento postal."
+                        persistent-hint
+                        type="text"
+                        autocomplete="off"
+                        @keypress.enter="searchZipCode"
+                        @change="searchZipCode"
+                      />
+                    </v-col>
+                  </v-row>
+
+                  <v-row>
+                    <v-col cols="12" md="8" lg="6" class="pt-0">
+                      <v-text-field
+                        ref="addressStreet"
+                        v-model="formData.address.street"
+                        :rules="formRules.address.street"
+                        label="Endereço"
+                        hint="Logradouro completo do endereço."
+                        persistent-hint
+                        type="text"
+                        autocomplete="off"
+                        @keypress.enter="save"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="4" lg="2" class="pt-0">
+                      <v-text-field
+                        ref="addressNumber"
+                        v-model="formData.address.number"
+                        label="Número"
+                        hint="Número do endereço."
+                        persistent-hint
+                        type="text"
+                        autocomplete="off"
+                        @keypress.enter="save"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="5" lg="4" class="pt-0">
+                      <v-text-field
+                        ref="addressComplement"
+                        v-model="formData.address.complement"
+                        label="Complemento"
+                        hint="Complemento do endereço."
+                        persistent-hint
+                        type="text"
+                        autocomplete="off"
+                        @keypress.enter="save"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="7" lg="6" class="pt-0">
+                      <v-text-field
+                        ref="addressDistrict"
+                        v-model="formData.address.district"
+                        :rules="formRules.address.district"
+                        label="Bairro"
+                        hint="Bairro do estabelecimento."
+                        persistent-hint
+                        type="text"
+                        autocomplete="off"
+                        @keypress.enter="save"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="8" lg="4" class="pt-0">
+                      <v-text-field
+                        ref="addressCity"
+                        v-model="formData.address.city"
+                        label="Cidade"
+                        hint="Cidade do estabelecimento."
+                        persistent-hint
+                        type="text"
+                        autocomplete="off"
+                        disabled
+                        @keypress.enter="save"
+                      />
+                    </v-col>
+
+                    <v-col cols="12" md="4" lg="2" class="pt-0">
+                      <v-select
+                        ref="addressState"
+                        v-model="formData.address.state"
+                        :items="states"
+                        label="Estado"
+                        hint="Unidade federativa."
+                        persistent-hint
+                        type="text"
+                        autocomplete="off"
+                        disabled
+                        @keypress.enter="save"
+                      />
+                    </v-col>
+                  </v-row>
+                </v-form>
+              </v-stepper-content>
+
+              <v-stepper-step :complete="stepper > 4" :step="4" :editable="formGeneralValid">
                 <span>Horários de funcionamento</span>
                 <small>Selecione os dias e preencha com os horários de cada dia</small>
               </v-stepper-step>
 
-              <v-stepper-content :step="3" class="pb-2">
+              <v-stepper-content :step="4" class="pb-2">
                 <v-form ref="formActiveDays" v-model.lazy="formActiveDaysValid" class="ml-n8">
                   <v-list class="active-days pt-1">
                     <v-list-item
@@ -223,9 +335,7 @@
                       color="red accent-4"
                       class="white--text body-1 font-weight-bold"
                       style="mix-blend-mode: hard-light"
-                    >
-                    Fechado
-                    </v-overlay>
+                    >Fechado</v-overlay>
                     <template #placeholder>
                       <v-row class="fill-height ma-0" align="center" justify="center">
                         <v-progress-circular indeterminate color="grey lighten-5" />
@@ -284,9 +394,11 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { mask } from '@titou10/v-mask'
 import { getMessage } from '@/helpers/messages'
 import imageSizes from '@/helpers/image-sizes'
 import rules from '@/helpers/validation-rules'
+import brazilianStates from '@/helpers/brazilian-states'
 import restrictGuests from '@/mixins/restrict-guests'
 
 const weekdays = [
@@ -331,6 +443,7 @@ async function getEstablishment ($fireStore, authUser) {
 export default {
   name: 'PageEstablishment',
   middleware: 'auth',
+  directives: { mask },
   mixins: [restrictGuests],
   async asyncData ({ app, store }) {
     const establishmentTypes = await getEstablishmentTypes(app.$fireStore)
@@ -369,6 +482,20 @@ export default {
       imageURL: establishment ? establishment.imageURL : '',
       deliveryEnabled: establishment ? establishment.deliveryEnabled : false,
       deliveryPrice: establishment ? establishment.deliveryPrice : '',
+      address:
+        establishment && establishment.address
+          ? establishment.address
+          : {
+              zipCode: '',
+              street: '',
+              number: '',
+              complement: '',
+              district: '',
+
+              // TODO: Remover valores fixos quando lançar para outras cidades.
+              city: 'Taquaritinga',
+              state: 'SP'
+            },
       activeDays
     }
 
@@ -388,8 +515,10 @@ export default {
       loading: true,
       formGeneralValid: false,
       formImageValid: false,
+      formAddressValid: false,
       formActiveDaysValid: false,
       defaultHours: [],
+      states: brazilianStates,
       weekdays
     }
   },
@@ -403,7 +532,8 @@ export default {
         deliveryPrice: rules.required,
         imageFile: rules.singleImageUpload,
         timeStart: rules.required,
-        timeEnd: rules.required
+        timeEnd: rules.required,
+        address: rules.address
       }
     },
 
@@ -457,7 +587,9 @@ export default {
     async save () {
       if (this.stepper === 1 && !this.$refs.formGeneral.validate()) return false
       if (this.stepper === 2 && !this.$refs.formImage.validate()) return false
-      if (this.stepper === 3 && !this.$refs.formActiveDays.validate()) {
+      if (this.stepper === 3 && !this.$refs.formAddress.validate())
+        return false
+      if (this.stepper === 4 && !this.$refs.formActiveDays.validate()) {
         this.$snackbar.showMessage(
           'É necessário preencher todos os horários de atendimento.',
           'error'
@@ -517,6 +649,8 @@ export default {
             this.formData.imageFile = doc.id
           }
         } else if (this.stepper === 3) {
+          data.address = this.formData.address
+        } else if (this.stepper === 4) {
           data.activeDays = this.formData.activeDays
             .filter((item) => !!item.active)
             .map((item) => ({
@@ -528,7 +662,7 @@ export default {
 
         await doc.set(data, { merge: true })
 
-        if (this.stepper < 3) this.stepper++
+        if (this.stepper < 4) this.stepper++
         this.$snackbar.showMessage(getMessage('save-success'), 'success')
       } catch (error) {
         console.error(error)
@@ -562,6 +696,45 @@ export default {
     clearTimes (day) {
       day.timeStart = ''
       day.timeEnd = ''
+    },
+
+    async searchZipCode () {
+      if (this.formData.address.zipCode.length !== 9) return false
+
+      try {
+        this.loading = true
+
+        const data = await fetch(
+          `https://viacep.com.br/ws/${this.formData.address.zipCode}/json/`,
+          {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json'
+            }
+          }
+        ).then((response) => response.json())
+
+        if (data.erro) {
+          this.formData.address.street = ''
+          this.formData.address.complement = ''
+          this.formData.address.district = ''
+        } else {
+          this.formData.address.street = data.logradouro
+          this.formData.address.complement = data.complemento
+          this.formData.address.district = data.bairro
+        }
+      } catch (error) {
+        this.formData.address.street = ''
+        this.formData.address.complement = ''
+        this.formData.address.district = ''
+
+        console.error(error)
+        this.$snackbar.showMessage(getMessage(error), 'error')
+      } finally {
+        this.loading = false
+      }
     }
   },
   head: () => ({
