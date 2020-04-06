@@ -11,7 +11,12 @@
           </v-toolbar>
 
           <v-card-text class="pt-0 pl-0 pr-0">
-            <v-stepper v-model="stepper" vertical class="elevation-0">
+            <v-stepper
+              v-model="stepper"
+              vertical
+              class="elevation-0"
+              @change="searchGeolocationByAddress"
+            >
               <v-stepper-step :complete="stepper > 1" :step="1" editable>
                 <span>Informações gerais</span>
                 <small>Preencha com as informações gerais do estabelecimento</small>
@@ -33,35 +38,51 @@
                       @keypress.enter="save"
                     />
 
-                    <v-select
-                      ref="types"
-                      v-model="formData.types"
-                      :rules="formRules.types"
+                    <v-autocomplete
+                      ref="establishmentTypes"
+                      v-model="formData.establishmentTypes"
+                      :rules="formRules.establishmentTypes"
                       :items="establishmentTypes"
                       label="Tipo de estabelecimento"
                       hint="Um ou mais tipos que definem o estabelecimento."
                       persistent-hint
+                      hide-no-data
                       multiple
+                      small-chips
+                      return-object
+                      :delimiters="[',', ';']"
                       class="pb-2"
-                      item-value="id"
                       item-text="name"
                       @keypress.enter="save"
-                    />
+                    >
+                      <template #selection="{ attrs, item, index, parent }">
+                        <v-chip
+                          v-bind="attrs"
+                          color="gray"
+                          label
+                          small
+                          close
+                          @click:close="parent.value.splice(index, 1)"
+                        >
+                          <span class="pr-2">{{ item.name }}</span>
+                        </v-chip>
+                      </template>
+                    </v-autocomplete>
                   </div>
 
                   <div class="delivery pb-1">
                     <v-row align="center" class="ma-0">
                       <v-checkbox
                         ref="delivery"
-                        v-model="formData.deliveryEnabled"
+                        v-model="formData.delivery.enabled"
                         label="Realiza entregas?"
                         hide-details
                         class="shrink mr-5 mt-0"
                       />
                       <v-text-field
-                        v-if="formData.deliveryEnabled"
+                        v-if="formData.delivery.enabled"
                         ref="deliveryPrice"
-                        v-model="formData.deliveryPrice"
+                        v-model="formData.delivery.price"
                         v-currency
                         :rules="formRules.deliveryPrice"
                         label="Preço por entrega"
@@ -233,8 +254,8 @@
                     <v-col cols="12" md="6" class="pt-0">
                       <v-text-field
                         ref="geolocationLat"
-                        v-model.number="formData.geolocation.latitude"
-                        v-mask="{ mask: '?#???######', tokens: { '#': { pattern: /\d/ }, '?': { pattern: /[\d-+.]/ } } }"
+                        v-model.number="formData.geolocation.lat"
+                        v-mask="geolocation.mask"
                         :rules="formRules.geolocation.latitude"
                         label="Latitude"
                         hint="Latitude geográfica do estabelecimento."
@@ -248,8 +269,8 @@
                     <v-col cols="12" md="6" class="pt-0">
                       <v-text-field
                         ref="geolocationLong"
-                        v-model.number="formData.geolocation.longitude"
-                        v-mask="{ mask: '?#???######', tokens: { '#': { pattern: /\d/ }, '?': { pattern: /[\d-+.]/ } } }"
+                        v-model.number="formData.geolocation.lng"
+                        v-mask="geolocation.mask"
                         :rules="formRules.geolocation.longitude"
                         label="Longitude"
                         hint="Longitude geográfica do estabelecimento."
@@ -258,6 +279,32 @@
                         autocomplete="off"
                         @keypress.enter="save"
                       />
+                    </v-col>
+                  </v-row>
+
+                  <v-row no-gutters>
+                    <v-col cols="12">
+                      <v-card outlined class="geolocation-map mt-4">
+                        <client-only>
+                          <l-map
+                            ref="map"
+                            :zoom="isGeolocationSet ? 16 : 14"
+                            :center="getMapCenter"
+                            :max-bounds="geolocation.maxBounds"
+                            @click="mapClick"
+                          >
+                            <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                            <l-marker
+                              v-if="isGeolocationSet"
+                              ref="markerObject"
+                              :lat-lng.sync="formData.geolocation"
+                              :draggable="true"
+                              :auto-pan="true"
+                              :auto-pan-padding="[20, 20]"
+                            />
+                          </l-map>
+                        </client-only>
+                      </v-card>
                     </v-col>
                   </v-row>
                 </v-form>
@@ -408,7 +455,7 @@
                     >{{ formData.name || 'Estabelecimento sem nome' }}</h1>
                     <p class="body-2 grey--text mb-auto">{{ typesDescription }}</p>
 
-                    <p v-if="formData.deliveryEnabled" class="body-2 grey--text mt-auto mb-0">
+                    <p v-if="formData.delivery.enabled" class="body-2 grey--text mt-auto mb-0">
                       <span>Realiza entregas:</span>
                       <strong
                         v-if="deliveryPriceRaw === 0"
@@ -436,6 +483,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { mask } from '@titou10/v-mask'
+import { EsriProvider } from 'leaflet-geosearch'
 import { getMessage } from '@/helpers/messages'
 import imageSizes from '@/helpers/image-sizes'
 import rules from '@/helpers/validation-rules'
@@ -456,7 +504,7 @@ async function getEstablishmentTypes ($fireStore) {
   const snapshot = await $fireStore
     .collection('establishmentTypes')
     .orderBy('name', 'asc')
-    .limit(50)
+    .limit(100)
     .get()
 
   return snapshot.docs.map((doc) => {
@@ -518,11 +566,13 @@ export default {
 
     const formData = {
       name: establishment ? establishment.name : '',
-      types: establishment ? establishment.types : '',
+      establishmentTypes: establishment ? establishment.establishmentTypes : '',
       imageFile: null,
       imageURL: establishment ? establishment.imageURL : '',
-      deliveryEnabled: establishment ? establishment.deliveryEnabled : false,
-      deliveryPrice: establishment ? establishment.deliveryPrice : '',
+      delivery: {
+        enabled: establishment && establishment.delivery ? establishment.delivery.enabled : false,
+        price: establishment && establishment.delivery ? establishment.delivery.price : ''
+      },
       address:
         establishment && establishment.address
           ? establishment.address
@@ -539,10 +589,13 @@ export default {
             },
       geolocation:
         establishment && establishment.geolocation
-          ? establishment.geolocation
+          ? {
+              lat: establishment.geolocation.latitude,
+              lng: establishment.geolocation.longitude
+            }
           : {
-              latitude: '',
-              longitude: ''
+              lat: '',
+              lng: ''
             },
       activeDays
     }
@@ -567,6 +620,18 @@ export default {
       formGeolocationValid: false,
       formActiveDaysValid: false,
       defaultHours: [],
+      geolocation: {
+        mask: {
+          mask: '?#???######',
+          tokens: { '#': { pattern: /\d/ }, '?': { pattern: /[\d-+.]/ } }
+        },
+        maxBounds: [
+          // TODO: Remover valores fixos quando lançar para outras cidades.
+          [-21.3545491, -48.6845582],
+          [-21.5399754, -48.3947651]
+        ],
+        provider: new EsriProvider()
+      },
       states: brazilianStates,
       weekdays
     }
@@ -577,7 +642,7 @@ export default {
     formRules () {
       return {
         name: rules.required,
-        types: rules.required,
+        establishmentTypes: rules.required,
         deliveryPrice: rules.required,
         imageFile: rules.singleImageUpload,
         timeStart: rules.required,
@@ -588,22 +653,22 @@ export default {
     },
 
     deliveryPriceFormmated () {
-      if (!this.formData.deliveryPrice) return 'Indisponível'
-      else if (this.formData.deliveryPrice.startsWith('R$'))
-        return this.formData.deliveryPrice
-      else return `R$ ${this.formData.deliveryPrice}`
+      if (!this.formData.delivery.price) return 'Indisponível'
+      else if (this.formData.delivery.price.startsWith('R$'))
+        return this.formData.delivery.price
+      else return `R$ ${this.formData.delivery.price}`
     },
 
     deliveryPriceRaw () {
-      const rawValue = this.$parseCurrency(this.formData.deliveryPrice)
+      const rawValue = this.$parseCurrency(this.formData.delivery.price)
       return rawValue === 0 ? rawValue : rawValue || null
     },
 
     typesDescription () {
-      if (!this.formData.types) return 'Sem tipo definido'
+      if (!this.formData.establishmentTypes) return 'Sem tipo definido'
       else {
         const names = this.establishmentTypes
-          .filter((item) => this.formData.types.includes(item.id))
+          .filter((item) => this.formData.establishmentTypes.includes(item.id))
           .map((item) => item.name)
 
         return names.join(', ').replace(/,(?=[^,]*$)/, ' e')
@@ -622,6 +687,19 @@ export default {
         return !!this.formData.activeDays.find(
           (item) => item.active && item.day === this.currentWeekday.day
         )
+      }
+    },
+
+    isGeolocationSet () {
+      return !!this.formData.geolocation.lat && !!this.formData.geolocation.lng
+    },
+
+    getMapCenter () {
+      if (this.isGeolocationSet) {
+        return [this.formData.geolocation.lat, this.formData.geolocation.lng]
+      } else {
+        // TODO: Remover valores fixos quando lançar para outras cidades.
+        return [-21.40611, -48.50472]
       }
     }
   },
@@ -666,9 +744,16 @@ export default {
 
         if (this.stepper === 1) {
           data.name = this.formData.name || null
-          data.types = this.formData.types.length ? this.formData.types : null
-          data.deliveryEnabled = this.formData.deliveryEnabled
-          data.deliveryPrice = this.deliveryPriceRaw
+          data.establishmentTypes =
+            this.formData.establishmentTypes &&
+            this.formData.establishmentTypes.length
+              ? this.formData.establishmentTypes.map((item) => ({
+                  id: item.id,
+                  name: item.name
+                }))
+              : null
+          data.delivery.enabled = this.formData.delivery.enabled
+          data.delivery.price = this.deliveryPriceRaw
         } else if (this.stepper === 2) {
           if (this.formData.imageURL === 'delete') {
             for (const size of ['', ...imageSizes]) {
@@ -711,8 +796,8 @@ export default {
           }
         } else if (this.stepper === 4) {
           data.geolocation = {
-            latitude: this.formData.geolocation.latitude,
-            longitude: this.formData.geolocation.longitude
+            latitude: this.formData.geolocation.lat,
+            longitude: this.formData.geolocation.lng
           }
         } else if (this.stepper === 5) {
           data.activeDays = this.formData.activeDays
@@ -799,6 +884,54 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+
+    mapClick (e) {
+      if (!this.formData.geolocation.lat && !this.formData.geolocation.lng) {
+        this.formData.geolocation.lat = e.latlng.lat
+        this.formData.geolocation.lng = e.latlng.lng
+      }
+    },
+
+    async searchGeolocationByAddress () {
+      if (this.stepper !== 4) {
+        return false
+      }
+
+      if (this.formData.geolocation.lat && this.formData.geolocation.lng) {
+        return false
+      }
+
+      if (
+        !this.formData.address.street ||
+        !this.formData.address.city ||
+        !this.formData.address.state
+      ) {
+        return false
+      }
+
+      try {
+        this.loading = true
+
+        const fullAddress =
+          this.formData.address.street +
+          `, ${this.formData.address.city}` +
+          `, ${this.formData.address.state}`
+
+        const results = await this.geolocation.provider.search({
+          query: fullAddress
+        })
+
+        if (!results || !results.length || results.length > 10) {
+          return false
+        } else {
+          this.formData.geolocation.lat = results[0].y
+          this.formData.geolocation.lng = results[0].x
+          this.$refs.map.mapObject.setView([results[0].y, results[0].x], 15)
+        }
+      } finally {
+        this.loading = false
+      }
     }
   },
   head: () => ({
@@ -825,6 +958,14 @@ export default {
     .col {
       max-width: 8rem;
     }
+  }
+}
+
+.geolocation-map {
+  height: 300px;
+
+  ::v-deep .leaflet-control-attribution {
+    display: none !important;
   }
 }
 </style>
