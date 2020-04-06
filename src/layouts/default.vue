@@ -23,7 +23,12 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item v-if="authUser.role === 'admin'" to="/atribuir-perfil" router exact>
+        <v-list-item
+          v-if="authUser && authUser.role === 'admin'"
+          to="/atribuir-perfil"
+          router
+          exact
+        >
           <v-list-item-action>
             <v-icon>mdi-account-box</v-icon>
           </v-list-item-action>
@@ -109,7 +114,7 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
-import messages from '@/helpers/messages'
+import { getMessage } from '@/helpers/messages'
 
 export default {
   name: 'LayoutDefault',
@@ -161,7 +166,8 @@ export default {
         await this.$fireAuth.signOut()
         this.$router.push('/acesso-restrito')
       } catch (error) {
-        this.$snackbar.showMessage(messages[error.code])
+        console.error(error)
+        this.$snackbar.showMessage(getMessage(error))
       }
     }
   }
