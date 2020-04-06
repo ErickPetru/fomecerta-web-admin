@@ -37,6 +37,7 @@ module.exports = {
   modules: [
     '@nuxtjs/firebase',
     '@nuxtjs/pwa',
+    'nuxt-leaflet',
     ['vue-currency-input/nuxt', {
       globalOptions: {
         currency: 'BRL',
