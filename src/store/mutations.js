@@ -5,13 +5,14 @@ export default {
     Object.assign(state, baseState())
   },
 
-  SET_AUTH_USER (state, { authUser, claims }) {
+  SET_AUTH_USER (state, { authUser }) {
     state.authUser = {
       uid: authUser.uid,
       email: authUser.email,
       emailVerified: authUser.emailVerified,
       displayName: authUser.displayName,
-      role: claims.role || 'customer'
+      termsAccepted: authUser.termsAccepted,
+      role: authUser.role || 'customer'
     }
   },
 

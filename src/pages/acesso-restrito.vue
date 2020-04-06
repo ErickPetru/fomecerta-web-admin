@@ -140,8 +140,6 @@ export default {
         }
 
         await this.$fireAuth.currentUser.getIdToken(true)
-
-        this.$snackbar.showMessage(getMessage('auth/success'), 'success')
       } catch (error) {
         console.error(error)
         this.$snackbar.showMessage({

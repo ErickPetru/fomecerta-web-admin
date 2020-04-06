@@ -10,9 +10,18 @@ export default {
     }
   },
 
-  onAuthStateChanged ({ commit }, { authUser, claims }) {
+  async onAuthStateChanged ({ commit }, { authUser, claims }) {
     if (authUser) {
-      commit('SET_AUTH_USER', { authUser, claims })
+      const establishment = await this.$fireStore.doc(`establishments/${authUser.uid}`).get()
+
+      if (establishment.exists && !!establishment.get('termsAccepted')) {
+        authUser.termsAccepted = true
+      } else {
+        authUser.termsAccepted = false
+      }
+
+      authUser.role = claims.role
+      commit('SET_AUTH_USER', { authUser })
     } else {
       commit('RESET_STORE')
     }
