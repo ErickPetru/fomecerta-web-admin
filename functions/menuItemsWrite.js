@@ -8,35 +8,51 @@ const FieldValue = admin.firestore.FieldValue
 
 const menuItemsWrite = functions.region('us-east4')
   .firestore.document('menuItems/{id}').onWrite((change) => {
-    if (change.after.exists) {
-      const document = change.after.data()
+    if (!change.before.exists) { // Creating
+      const doc = change.after.data()
 
-      if (change.before.exists) {
-        const oldDocument = change.before.data()
+      return Promise.all([
+        db.doc(`establishments/${doc.uid}`).update({
+          sizes: {
+            menuItems: FieldValue.increment(1)
+          }
+        }),
 
-        if (oldDocument.category.id !== document.category.id) {
-          return Promise.all([
-            db.doc(`menuCategories/${oldDocument.category.id}`).update({
-              usedBy: FieldValue.increment(-1)
-            }),
-            db.doc(`menuCategories/${document.category.id}`).update({
-              usedBy: FieldValue.increment(1)
-            }).catch((error) => {
-              return error
-            })
-          ])
-        }
-      } else {
-        return db.doc(`menuCategories/${document.category.id}`).update({
+        db.doc(`menuCategories/${doc.category.id}`).update({
           usedBy: FieldValue.increment(1)
         })
-      }
-    } else {
-      const oldDocument = change.before.data()
+      ])
 
-      return db.doc(`menuCategories/${oldDocument.category.id}`).update({
-        usedBy: FieldValue.increment(-1)
-      })
+    } else if (change.before.exists && change.after.exists) { // Updating
+      const oldDoc = change.before.data()
+      const doc = change.after.data()
+
+      if (oldDoc.category.id !== doc.category.id) {
+        return Promise.all([
+          db.doc(`menuCategories/${oldDoc.category.id}`).update({
+            usedBy: FieldValue.increment(-1)
+          }),
+
+          db.doc(`menuCategories/${doc.category.id}`).update({
+            usedBy: FieldValue.increment(1)
+          })
+        ])
+      }
+
+    } else if (!change.after.exists) { // Deleting
+      const doc = change.before.data()
+
+      return Promise.all([
+        db.doc(`establishments/${doc.uid}`).update({
+          sizes: {
+            menuItems: FieldValue.increment(-1)
+          }
+        }),
+
+        db.doc(`menuCategories/${doc.category.id}`).update({
+          usedBy: FieldValue.increment(-1)
+        })
+      ])
     }
 
     return null
