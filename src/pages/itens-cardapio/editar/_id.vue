@@ -38,7 +38,7 @@
                           v-else
                           small
                           dark
-                          class="grey text font-weight-medium"
+                          class="grey white--text font-weight-medium font-normal"
                           v-text="item.name.charAt(0)"
                         />
                       </v-avatar>
@@ -231,6 +231,7 @@ export default {
   async asyncData ({ app, params, store, redirect }) {
     const formData = {
       category: null,
+      categoryOld: null,
       sku: '',
       name: '',
       description: '',
@@ -265,6 +266,10 @@ export default {
       } else {
         return redirect('/itens-cardapio/incluir')
       }
+    }
+
+    if (formData.category) {
+      formData.categoryOld = formData.category
     }
 
     const snapshot = await app.$fireStore
@@ -305,7 +310,8 @@ export default {
 
     priceFormmated () {
       if (!this.formData.price) return 'Indisponível'
-      else if (this.formData.price.startsWith('R$')) return this.formData.price
+      else if (this.formData.price.toString().startsWith('R$'))
+        return this.formData.price
       else return `R$ ${this.formData.price}`
     },
 
@@ -333,38 +339,62 @@ export default {
       try {
         this.loading = true
 
-        const collection = this.$fireStore.collection('menuItems')
-
         const data = {}
-        const doc = this.id ? await collection.doc(this.id) : collection.doc()
+        const ref = this.id
+          ? this.$fireStore.collection('menuItems').doc(this.id)
+          : this.$fireStore.collection('menuItems').doc()
+        const doc = this.id ? await ref.get() : null
+        const batch = this.$fireStore.batch()
 
-        if (doc.exists) {
+        if (doc && doc.exists) {
           if (doc.get('uid') !== this.authUser.uid) return false
 
           data.updatedAt = this.$fireStoreObj.Timestamp.now()
         } else {
           data.createdAt = this.$fireStoreObj.Timestamp.now()
+          data.uid = this.authUser.uid
+
+          batch.update(this.$fireStore.doc(`establishments/${data.uid}`), {
+            'sizes.menuItems': this.$fireStoreObj.FieldValue.increment(1)
+          })
         }
 
-        data.uid = this.authUser.uid
         data.sku = this.formData.sku ? this.formData.sku.toUpperCase() : null
         data.name = this.formData.name || null
         data.description = this.formData.description || null
         data.price = this.priceRaw
-        data.category = this.formData.category
-          ? {
-              id: this.formData.category.id,
-              name: this.formData.category.name
-            }
+
+        const category = this.formData.category
+        const categoryOld = this.formData.categoryOld
+
+        if (categoryOld && (!category || categoryOld.id !== category.id)) {
+          batch.update(
+            this.$fireStore.doc(`menuCategories/${categoryOld.id}`),
+            { usedBy: this.$fireStoreObj.FieldValue.increment(-1) }
+          )
+        }
+
+        if (!categoryOld || (category && categoryOld.id !== category.id)) {
+          batch.update(this.$fireStore.doc(`menuCategories/${category.id}`), {
+            usedBy: this.$fireStoreObj.FieldValue.increment(1)
+          })
+        }
+
+        data.category = category
+          ? { id: category.id, name: category.name }
           : null
+
+        this.formData.categoryOld = this.formData.category
 
         if (this.formData.imageURL === 'delete') {
           for (const size of ['', ...imageSizes]) {
-            const ref = this.$fireStorage.ref(`menuItems/${doc.id}${size}`)
-            ref
+            const refName = `menuItems/${ref.id}${size}`
+            const storage = this.$fireStorage.ref(refName)
+
+            storage
               .getDownloadURL()
               .then(() => {
-                ref.delete()
+                storage.delete()
               })
               .catch(() => {
                 return true
@@ -378,15 +408,17 @@ export default {
           this.formData.imageFile &&
           typeof this.formData.imageFile === 'object'
         ) {
-          const refName = `menuItems/${doc.id}`
+          const refName = `menuItems/${ref.id}`
           const storage = this.$fireStorage.ref(refName)
           const snapshot = await storage.put(this.formData.imageFile)
           const downloadURL = await snapshot.ref.getDownloadURL()
           data.imageURL = downloadURL.split('?').join('_1000x1000?')
-          this.formData.imageFile = doc.id
+          this.formData.imageFile = ref.id
         }
 
-        await doc.set(data, { merge: true })
+        batch.set(ref, data, { merge: true })
+        await batch.commit()
+
         this.$snackbar.showMessage(getMessage('save-success'), 'success')
 
         if (this.mode === 'insert') {

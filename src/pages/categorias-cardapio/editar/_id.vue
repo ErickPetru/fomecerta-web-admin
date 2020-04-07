@@ -158,6 +158,7 @@ export default {
   async asyncData ({ app, params, store, redirect }) {
     const formData = {
       name: '',
+      nameOld: '',
       synonyms: [],
       usedBy: null,
       imageFile: null,
@@ -172,6 +173,9 @@ export default {
 
       if (doc.exists && doc.get('uid') === store.state.authUser.uid) {
         formData.name = doc.get('name')
+        if (formData.name) {
+          formData.nameOld = formData.name
+        }
         formData.synonyms = doc.get('synonyms')
         formData.usedBy = doc.get('usedBy')
         formData.imageURL = doc.get('imageURL')
@@ -227,21 +231,46 @@ export default {
       try {
         this.loading = true
 
-        const collection = this.$fireStore.collection('menuCategories')
-
         const data = {}
-        const doc = this.id ? await collection.doc(this.id) : collection.doc()
+        const ref = this.id
+          ? this.$fireStore.collection('menuCategories').doc(this.id)
+          : this.$fireStore.collection('menuCategories').doc()
+        const doc = this.id ? await ref.get() : null
+        const batch = this.$fireStore.batch()
 
-        if (doc.exists) {
+        if (doc && doc.exists) {
           if (doc.get('uid') !== this.authUser.uid) return false
 
           data.updatedAt = this.$fireStoreObj.Timestamp.now()
         } else {
           data.createdAt = this.$fireStoreObj.Timestamp.now()
+          data.uid = this.authUser.uid
+
+          batch.update(this.$fireStore.doc(`establishments/${data.uid}`), {
+            'sizes.menuCategories': this.$fireStoreObj.FieldValue.increment(1)
+          })
         }
 
-        data.uid = this.authUser.uid
-        data.name = this.formData.name || null
+        const name = this.formData.name
+        const nameOld = this.formData.nameOld
+
+        if (name !== nameOld) {
+          const snapshot = await this.$fireStore
+            .collection('menuItems')
+            .where('category.id', '==', ref.id)
+            .get()
+
+          if (!snapshot.empty) {
+            snapshot.forEach((doc) => {
+              batch.update(doc.ref, { 'category.name': name })
+            })
+          }
+        }
+
+        data.name = name || null
+
+        this.formData.nameOld = this.formData.name
+
         data.synonyms =
           this.formData.synonyms && this.formData.synonyms.length
             ? this.formData.synonyms
@@ -249,11 +278,13 @@ export default {
 
         if (this.formData.imageURL === 'delete') {
           for (const size of ['', ...imageSizes]) {
-            const ref = this.$fireStorage.ref(`menuCategories/${doc.id}${size}`)
-            ref
+            const refName = `menuCategories/${ref.id}${size}`
+            const storage = this.$fireStorage.ref(refName)
+
+            storage
               .getDownloadURL()
               .then(() => {
-                ref.delete()
+                storage.delete()
               })
               .catch(() => {
                 return true
@@ -267,15 +298,17 @@ export default {
           this.formData.imageFile &&
           typeof this.formData.imageFile === 'object'
         ) {
-          const refName = `menuCategories/${doc.id}`
+          const refName = `menuCategories/${ref.id}`
           const storage = this.$fireStorage.ref(refName)
           const snapshot = await storage.put(this.formData.imageFile)
           const downloadURL = await snapshot.ref.getDownloadURL()
           data.imageURL = downloadURL.split('?').join('_1000x1000?')
-          this.formData.imageFile = doc.id
+          this.formData.imageFile = ref.id
         }
 
-        await doc.set(data, { merge: true })
+        batch.set(ref, data, { merge: true })
+        await batch.commit()
+
         this.$snackbar.showMessage(getMessage('save-success'), 'success')
 
         if (this.mode === 'insert') {

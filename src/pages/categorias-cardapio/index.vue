@@ -17,7 +17,6 @@
               :loading="loading"
               :items="items"
               :sort-by.sync="sortBy"
-              no-data-text="Não há dados para exibir"
               must-sort
               disable-pagination
               hide-default-footer
@@ -193,7 +192,10 @@ export default {
       items: snapshot.docs.map((doc) => {
         return {
           id: doc.id,
-          ...doc.data()
+          name: doc.get('name'),
+          synonyms: doc.get('synonyms'),
+          imageURL: doc.get('imageURL'),
+          usedBy: doc.get('usedBy')
         }
       })
     }
@@ -255,8 +257,7 @@ export default {
           .get()
 
         if (!doc.exists) {
-          this.loading = false
-          return false
+          return this.localRemove()
         }
 
         if (doc.get('imageURL')) {
@@ -273,22 +274,37 @@ export default {
           }
         }
 
-        await this.$fireStore
-          .collection('menuCategories')
-          .doc(doc.id)
-          .delete()
+        const batch = this.$fireStore.batch()
 
-        const indexOf = this.items.indexOf((item) => item.id === doc.id)
-        this.items.splice(indexOf, 1)
-        this.selectedItem = null
+        batch.update(this.$fireStore.doc(`establishments/${doc.get('uid')}`), {
+          'sizes.menuCategories': this.$fireStoreObj.FieldValue.increment(-1)
+        })
 
-        this.$snackbar.showMessage(getMessage('remove-success'), 'success')
+        batch.delete(this.$fireStore.doc(`menuCategories/${doc.id}`))
+        await batch.commit()
+
+        return this.localRemove()
       } catch (error) {
         console.error(error)
         this.$snackbar.showMessage(getMessage(error), 'error')
       } finally {
         this.loading = false
       }
+    },
+
+    localRemove () {
+      this.loading = true
+
+      const indexOf = this.items.findIndex((i) => i.id === this.selectedItem.id)
+
+      if (indexOf > -1) {
+        this.items.splice(indexOf, 1)
+        this.selectedItem = null
+        this.$snackbar.showMessage(getMessage('remove-success'), 'success')
+      }
+
+      this.loading = false
+      return true
     },
 
     rowClicked (value) {
