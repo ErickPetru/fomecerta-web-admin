@@ -58,14 +58,14 @@
             <v-card>
               <v-img
                 :src="establishment && establishment.imageURL ? establishment.imageURL : ''"
-                :lazy-src="establishment && establishment.imageURL && establishment.imageURL.startsWith('http') ? establishment.imageURL.replace('_400x400', '_50x50') : establishment.imageURL"
+                :lazy-src="establishment && establishment.imageURL && establishment.imageURL.startsWith('http') ? establishment.imageURL.replace('_400x400', '_50x50') : ''"
                 class="white--text align-end"
                 :class="isEstablishmentCompleted ? 'grey' : 'error'"
                 gradient="to bottom, rgba(0,0,0,.05), rgba(0,0,0,.75)"
                 height="200px"
               >
                 <template #placeholder>
-                  <v-row class="fill-height ma-0" align="center" justify="center">
+                  <v-row v-if="establishment && establishment.imageURL" class="fill-height ma-0" align="center" justify="center">
                     <v-progress-circular indeterminate color="grey lighten-5" />
                   </v-row>
                 </template>
