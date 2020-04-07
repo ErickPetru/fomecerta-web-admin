@@ -60,7 +60,7 @@
                 :src="establishment && establishment.imageURL ? establishment.imageURL : ''"
                 :lazy-src="establishment && establishment.imageURL && establishment.imageURL.startsWith('http') ? establishment.imageURL.replace('_400x400', '_50x50') : ''"
                 class="white--text align-end"
-                :class="isEstablishmentCompleted ? 'grey' : 'error'"
+                :class="isEstablishmentCompleted ? 'success lighten-1' : 'error'"
                 gradient="to bottom, rgba(0,0,0,.05), rgba(0,0,0,.75)"
                 height="200px"
               >
@@ -102,7 +102,7 @@
             <v-card>
               <v-img
                 class="white--text align-end"
-                :class="menuCategoriesCount ? 'grey darken-1' : 'warning'"
+                :class="menuCategoriesCount ? 'success lighten-1' : 'warning'"
                 height="200px"
               >
                 <template v-if="menuCategoriesCount === 1">
@@ -135,7 +135,7 @@
             <v-card>
               <v-img
                 class="white--text align-end"
-                :class="menuItemsCount ? 'grey darken-1' : 'warning'"
+                :class="menuItemsCount ? 'success lighten-1' : 'warning'"
                 height="200px"
               >
                 <template v-if="menuItemsCount === 1">
