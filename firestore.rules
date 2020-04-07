@@ -15,5 +15,15 @@ service cloud.firestore {
       allow read, write, update: if request.auth != null && request.auth.uid == resource.id
       allow delete: if false
     }
+
+    match /menuCategories/{document=**} {
+      allow read, write, update: if request.auth != null && request.auth.uid == resource.data.uid
+      allow delete: if false
+    }
+
+    match /menuItems/{document=**} {
+      allow read, write, update: if request.auth != null && request.auth.uid == resource.data.uid
+      allow delete: if false
+    }
   }
 }
