@@ -479,7 +479,9 @@
                     >{{ formData.name || 'Estabelecimento sem nome' }}</h1>
                     <p class="body-2 grey--text mb-auto">
                       {{ typesDescription }}
-                      <span v-if="formData.geolocation.lat && formData.geolocation.lng">
+                      <span
+                        v-if="formData.geolocation.lat && formData.geolocation.lng"
+                      >
                         <b class="ml-1 mr-1">&bull;</b> 0,1 km
                       </span>
                     </p>
@@ -598,6 +600,9 @@ export default {
       typesOfEstablishment: establishment
         ? establishment.typesOfEstablishment
         : '',
+      typesOfEstablishmentOld: establishment
+        ? establishment.typesOfEstablishment
+        : [],
       imageFile: null,
       imageURL: establishment ? establishment.imageURL : '',
       delivery: {
@@ -789,6 +794,7 @@ export default {
 
         const data = {}
         const snapshot = await doc.get()
+        const batch = this.$fireStore.batch()
 
         if (snapshot.exists && !!snapshot.get('createdAt')) {
           data.updatedAt = this.$fireStoreObj.Timestamp.now()
@@ -798,18 +804,48 @@ export default {
 
         if (step === 1) {
           data.name = this.formData.name || null
-          data.typesOfEstablishment =
-            this.formData.typesOfEstablishment &&
-            this.formData.typesOfEstablishment.length
-              ? this.formData.typesOfEstablishment.map((item) => ({
-                  id: item.id,
-                  name: item.name
-                }))
-              : null
           data.delivery = {
             enabled: this.formData.delivery.enabled,
             price: this.deliveryPriceRaw
           }
+
+          const typesOfEstablishmentOld = this.formData.typesOfEstablishmentOld
+          const typesOfEstablishment = this.formData.typesOfEstablishment || []
+
+          if (typesOfEstablishmentOld.length) {
+            const removed = typesOfEstablishmentOld.filter(
+              (o) => !typesOfEstablishment.find((n) => n.id === o.id)
+            )
+
+            for (const o of removed) {
+              batch.update(
+                this.$fireStore.collection('establishmentTypes').doc(o.id),
+                { usedBy: this.$fireStoreObj.FieldValue.increment(-1) }
+              )
+            }
+          }
+
+          if (typesOfEstablishment.length) {
+            data.typesOfEstablishment = typesOfEstablishment.map((type) => ({
+              id: type.id,
+              name: type.name
+            }))
+
+            const added = typesOfEstablishment.filter(
+              (n) => !typesOfEstablishmentOld.find((o) => o.id === n.id)
+            )
+
+            for (const n of added) {
+              batch.update(
+                this.$fireStore.collection('establishmentTypes').doc(n.id),
+                { usedBy: this.$fireStoreObj.FieldValue.increment(1) }
+              )
+            }
+          } else {
+            data.typesOfEstablishment = null
+          }
+
+          this.formData.typesOfEstablishmentOld = this.formData.typesOfEstablishment
         } else if (step === 2) {
           if (this.formData.imageURL === 'delete') {
             for (const size of ['', ...imageSizes]) {
@@ -865,7 +901,8 @@ export default {
             }))
         }
 
-        await doc.set(data, { merge: true })
+        batch.set(doc, data, { merge: true })
+        await batch.commit()
 
         if (goToNextStep) {
           this.$snackbar.showMessage(getMessage('save-success'), 'success')
