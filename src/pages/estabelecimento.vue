@@ -12,12 +12,12 @@
 
           <v-card-text class="pt-0 pl-0 pr-0">
             <v-stepper
-              v-model="stepper"
+              v-model="stepper.current"
               vertical
               class="elevation-0"
-              @change="searchGeolocationByAddress"
+              @change="stepperChanged"
             >
-              <v-stepper-step :complete="stepper > 1" :step="1" editable>
+              <v-stepper-step :complete="stepper.current > 1" :step="1" editable>
                 <span>Informações gerais</span>
                 <small>Preencha com as informações gerais do estabelecimento</small>
               </v-stepper-step>
@@ -35,13 +35,15 @@
                       type="text"
                       autocomplete="off"
                       class="pb-2"
+                      :loading="loading"
+                      :readonly="loading"
                       @keypress.enter="save"
                     />
 
                     <v-autocomplete
-                      ref="establishmentTypes"
-                      v-model="formData.establishmentTypes"
-                      :rules="formRules.establishmentTypes"
+                      ref="typesOfEstablishment"
+                      v-model="formData.typesOfEstablishment"
+                      :rules="formRules.typesOfEstablishment"
                       :items="establishmentTypes"
                       label="Tipo de estabelecimento"
                       hint="Um ou mais tipos que definem o estabelecimento."
@@ -49,25 +51,17 @@
                       hide-no-data
                       multiple
                       small-chips
+                      deletable-chips
                       return-object
-                      :delimiters="[',', ';']"
+                      auto-select-first
+                      :search-input.sync="typesOfEstablishmentSearch"
                       class="pb-2"
                       item-text="name"
+                      :loading="loading"
+                      :readonly="loading"
                       @keypress.enter="save"
-                    >
-                      <template #selection="{ attrs, item, index, parent }">
-                        <v-chip
-                          v-bind="attrs"
-                          color="gray"
-                          label
-                          small
-                          close
-                          @click:close="parent.value.splice(index, 1)"
-                        >
-                          <span class="pr-2">{{ item.name }}</span>
-                        </v-chip>
-                      </template>
-                    </v-autocomplete>
+                      @change="typesOfEstablishmentSearch = ''"
+                    />
                   </div>
 
                   <div class="delivery pb-1">
@@ -78,6 +72,8 @@
                         label="Realiza entregas?"
                         hide-details
                         class="shrink mr-5 mt-0"
+                        :loading="loading"
+                        :readonly="loading"
                       />
                       <v-text-field
                         v-if="formData.delivery.enabled"
@@ -89,6 +85,8 @@
                         hint="Preço fixo por entrega."
                         persistent-hint
                         autocomplete="off"
+                        :loading="loading"
+                        :readonly="loading"
                         @keypress.enter="save"
                       />
                       <v-text-field v-else label="Preço por entrega" disabled />
@@ -97,7 +95,7 @@
                 </v-form>
               </v-stepper-content>
 
-              <v-stepper-step :complete="stepper > 2" :step="2" :editable="formGeneralValid">
+              <v-stepper-step :complete="stepper.current > 2" :step="2" editable>
                 <span>Logomarca</span>
                 <small>Escolha a imagem com a logomarca de seu negócio</small>
               </v-stepper-step>
@@ -113,6 +111,7 @@
                     prepend-icon="mdi-paperclip"
                     clearable
                     readonly
+                    :loading="loading"
                     @keydown.delete="markImageToDelete"
                     @click:clear="markImageToDelete"
                   />
@@ -126,12 +125,14 @@
                     persistent-hint
                     truncate-length="50"
                     accept=".jpg, .jpeg, .png"
+                    :loading="loading"
+                    :readonly="loading"
                     @change="onImageChange"
                   />
                 </v-form>
               </v-stepper-content>
 
-              <v-stepper-step :complete="stepper > 3" :step="3" :editable="formGeneralValid">
+              <v-stepper-step :complete="stepper.current > 3" :step="3" editable>
                 <span>Endereço</span>
                 <small>Informe onde seu estabelecimento se encontra fisicamente</small>
               </v-stepper-step>
@@ -150,6 +151,8 @@
                         persistent-hint
                         type="text"
                         autocomplete="off"
+                        :loading="loading"
+                        :readonly="loading"
                         @keypress.enter="searchZipCode"
                         @change="searchZipCode"
                       />
@@ -167,6 +170,8 @@
                         persistent-hint
                         type="text"
                         autocomplete="off"
+                        :loading="loading"
+                        :readonly="loading"
                         @keypress.enter="save"
                       />
                     </v-col>
@@ -180,6 +185,8 @@
                         persistent-hint
                         type="text"
                         autocomplete="off"
+                        :loading="loading"
+                        :readonly="loading"
                         @keypress.enter="save"
                       />
                     </v-col>
@@ -193,6 +200,8 @@
                         persistent-hint
                         type="text"
                         autocomplete="off"
+                        :loading="loading"
+                        :readonly="loading"
                         @keypress.enter="save"
                       />
                     </v-col>
@@ -207,6 +216,8 @@
                         persistent-hint
                         type="text"
                         autocomplete="off"
+                        :loading="loading"
+                        :readonly="loading"
                         @keypress.enter="save"
                       />
                     </v-col>
@@ -221,6 +232,8 @@
                         type="text"
                         autocomplete="off"
                         disabled
+                        :loading="loading"
+                        :readonly="loading"
                         @keypress.enter="save"
                       />
                     </v-col>
@@ -236,6 +249,8 @@
                         type="text"
                         autocomplete="off"
                         disabled
+                        :loading="loading"
+                        :readonly="loading"
                         @keypress.enter="save"
                       />
                     </v-col>
@@ -243,7 +258,7 @@
                 </v-form>
               </v-stepper-content>
 
-              <v-stepper-step :complete="stepper > 4" :step="4" :editable="formGeneralValid">
+              <v-stepper-step :complete="stepper.current > 4" :step="4" editable>
                 <span>Geolocalização</span>
                 <small>Informe com precisão o posicionamento geográfico do estabelecimento</small>
               </v-stepper-step>
@@ -262,6 +277,8 @@
                         persistent-hint
                         type="text"
                         autocomplete="off"
+                        :loading="loading"
+                        :readonly="loading"
                         @keypress.enter="save"
                       />
                     </v-col>
@@ -277,6 +294,8 @@
                         persistent-hint
                         type="text"
                         autocomplete="off"
+                        :loading="loading"
+                        :readonly="loading"
                         @keypress.enter="save"
                       />
                     </v-col>
@@ -287,6 +306,7 @@
                       <v-card outlined class="geolocation-map mt-4">
                         <client-only>
                           <l-map
+                            v-if="stepper.current === 4"
                             ref="map"
                             :zoom="isGeolocationSet ? 16 : 14"
                             :center="getMapCenter"
@@ -300,7 +320,7 @@
                               :lat-lng.sync="formData.geolocation"
                               :draggable="true"
                               :auto-pan="true"
-                              :auto-pan-padding="[20, 20]"
+                              :auto-pan-padding="[15, 15]"
                             />
                           </l-map>
                         </client-only>
@@ -310,7 +330,7 @@
                 </v-form>
               </v-stepper-content>
 
-              <v-stepper-step :complete="stepper > 5" :step="5" :editable="formGeneralValid">
+              <v-stepper-step :step="5" editable>
                 <span>Horários de funcionamento</span>
                 <small>Selecione os dias e preencha com os horários de cada dia</small>
               </v-stepper-step>
@@ -344,6 +364,8 @@
                               hide-details
                               filled
                               dense
+                              :loading="loading"
+                              :readonly="loading"
                               @keypress.enter="save"
                             >
                               <template
@@ -366,6 +388,8 @@
                                 hide-details
                                 filled
                                 dense
+                                :loading="loading"
+                                :readonly="loading"
                                 @keypress.enter="save"
                               >
                                 <template #item="{ item }">
@@ -453,7 +477,12 @@
                     <h1
                       class="headline font-weight-bold mb-2"
                     >{{ formData.name || 'Estabelecimento sem nome' }}</h1>
-                    <p class="body-2 grey--text mb-auto">{{ typesDescription }}</p>
+                    <p class="body-2 grey--text mb-auto">
+                      {{ typesDescription }}
+                      <span v-if="formData.geolocation.lat && formData.geolocation.lng">
+                        <b class="ml-1 mr-1">&bull;</b> 0,1 km
+                      </span>
+                    </p>
 
                     <p v-if="formData.delivery.enabled" class="body-2 grey--text mt-auto mb-0">
                       <span>Realiza entregas:</span>
@@ -566,12 +595,20 @@ export default {
 
     const formData = {
       name: establishment ? establishment.name : '',
-      establishmentTypes: establishment ? establishment.establishmentTypes : '',
+      typesOfEstablishment: establishment
+        ? establishment.typesOfEstablishment
+        : '',
       imageFile: null,
       imageURL: establishment ? establishment.imageURL : '',
       delivery: {
-        enabled: establishment && establishment.delivery ? establishment.delivery.enabled : false,
-        price: establishment && establishment.delivery ? establishment.delivery.price : ''
+        enabled:
+          establishment && establishment.delivery
+            ? establishment.delivery.enabled
+            : false,
+        price:
+          establishment && establishment.delivery
+            ? establishment.delivery.price
+            : ''
       },
       address:
         establishment && establishment.address
@@ -612,13 +649,17 @@ export default {
   },
   data () {
     return {
-      stepper: 1,
+      stepper: {
+        current: 1,
+        old: 1
+      },
       loading: true,
       formGeneralValid: false,
       formImageValid: false,
       formAddressValid: false,
       formGeolocationValid: false,
       formActiveDaysValid: false,
+      typesOfEstablishmentSearch: '',
       defaultHours: [],
       geolocation: {
         mask: {
@@ -642,7 +683,7 @@ export default {
     formRules () {
       return {
         name: rules.required,
-        establishmentTypes: rules.required,
+        typesOfEstablishment: rules.required,
         deliveryPrice: rules.required,
         imageFile: rules.singleImageUpload,
         timeStart: rules.required,
@@ -665,13 +706,12 @@ export default {
     },
 
     typesDescription () {
-      if (!this.formData.establishmentTypes) return 'Sem tipo definido'
+      if (!this.formData.typesOfEstablishment) return 'Sem tipo definido'
       else {
-        const names = this.establishmentTypes
-          .filter((item) => this.formData.establishmentTypes.includes(item.id))
+        return this.formData.typesOfEstablishment
           .map((item) => item.name)
-
-        return names.join(', ').replace(/,(?=[^,]*$)/, ' e')
+          .join(', ')
+          .replace(/,(?=[^,]*$)/, ' e')
       }
     },
 
@@ -712,13 +752,27 @@ export default {
     this.loading = false
   },
   methods: {
-    async save () {
-      if (this.stepper === 1 && !this.$refs.formGeneral.validate()) return false
-      if (this.stepper === 2 && !this.$refs.formImage.validate()) return false
-      if (this.stepper === 3 && !this.$refs.formAddress.validate()) return false
-      if (this.stepper === 4 && !this.$refs.formGeolocation.validate())
-        return false
-      if (this.stepper === 5 && !this.$refs.formActiveDays.validate()) {
+    async stepperChanged (step) {
+      if (step !== this.stepper.old) {
+        const result = await this.save(this.stepper.old, false)
+
+        if (result !== false) {
+          this.stepper.old = step
+        } else {
+          this.stepper.current = this.stepper.old
+        }
+      }
+    },
+
+    async save (...args) {
+      const step = args.length === 1 ? this.stepper.current : args[0]
+      const goToNextStep = args.length === 1 ? true : args[1]
+
+      if (step === 1 && !this.$refs.formGeneral.validate()) return false
+      if (step === 2 && !this.$refs.formImage.validate()) return false
+      if (step === 3 && !this.$refs.formAddress.validate()) return false
+      if (step === 4 && !this.$refs.formGeolocation.validate()) return false
+      if (step === 5 && !this.$refs.formActiveDays.validate()) {
         this.$snackbar.showMessage(
           'É necessário preencher todos os horários de atendimento.',
           'error'
@@ -736,25 +790,27 @@ export default {
         const data = {}
         const snapshot = await doc.get()
 
-        if (snapshot.exists) {
+        if (snapshot.exists && !!snapshot.get('createdAt')) {
           data.updatedAt = this.$fireStoreObj.Timestamp.now()
         } else {
           data.createdAt = this.$fireStoreObj.Timestamp.now()
         }
 
-        if (this.stepper === 1) {
+        if (step === 1) {
           data.name = this.formData.name || null
-          data.establishmentTypes =
-            this.formData.establishmentTypes &&
-            this.formData.establishmentTypes.length
-              ? this.formData.establishmentTypes.map((item) => ({
+          data.typesOfEstablishment =
+            this.formData.typesOfEstablishment &&
+            this.formData.typesOfEstablishment.length
+              ? this.formData.typesOfEstablishment.map((item) => ({
                   id: item.id,
                   name: item.name
                 }))
               : null
-          data.delivery.enabled = this.formData.delivery.enabled
-          data.delivery.price = this.deliveryPriceRaw
-        } else if (this.stepper === 2) {
+          data.delivery = {
+            enabled: this.formData.delivery.enabled,
+            price: this.deliveryPriceRaw
+          }
+        } else if (step === 2) {
           if (this.formData.imageURL === 'delete') {
             for (const size of ['', ...imageSizes]) {
               const ref = this.$fireStorage.ref(
@@ -784,7 +840,7 @@ export default {
             data.imageURL = downloadURL.split('?').join('_1000x1000?')
             this.formData.imageFile = doc.id
           }
-        } else if (this.stepper === 3) {
+        } else if (step === 3) {
           data.address = {
             zipCode: this.formData.address.zipCode,
             street: this.formData.address.street,
@@ -794,12 +850,12 @@ export default {
             city: this.formData.address.city,
             state: this.formData.address.state
           }
-        } else if (this.stepper === 4) {
+        } else if (step === 4) {
           data.geolocation = {
             latitude: this.formData.geolocation.lat,
             longitude: this.formData.geolocation.lng
           }
-        } else if (this.stepper === 5) {
+        } else if (step === 5) {
           data.activeDays = this.formData.activeDays
             .filter((item) => !!item.active)
             .map((item) => ({
@@ -811,8 +867,17 @@ export default {
 
         await doc.set(data, { merge: true })
 
-        if (this.stepper < 5) this.stepper++
-        this.$snackbar.showMessage(getMessage('save-success'), 'success')
+        if (goToNextStep) {
+          this.$snackbar.showMessage(getMessage('save-success'), 'success')
+
+          if (this.stepper.current < 5) {
+            this.stepper.current++
+
+            if (this.stepper.current === 4) {
+              await this.searchGeolocationByAddress()
+            }
+          }
+        }
       } catch (error) {
         console.error(error)
         this.$snackbar.showMessage(getMessage(error), 'error')
@@ -894,10 +959,6 @@ export default {
     },
 
     async searchGeolocationByAddress () {
-      if (this.stepper !== 4) {
-        return false
-      }
-
       if (this.formData.geolocation.lat && this.formData.geolocation.lng) {
         return false
       }
