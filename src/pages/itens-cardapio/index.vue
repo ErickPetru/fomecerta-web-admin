@@ -79,6 +79,9 @@
 
                 <span v-else class="caption error--text">Não</span>
               </template>
+              <template #item.price="{ item }">
+                {{ item.price | currency }}
+              </template>
             </v-data-table>
           </v-card-text>
         </v-card>
