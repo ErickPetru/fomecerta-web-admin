@@ -13,7 +13,7 @@
           <v-card-text class="pa-8 pt-10 pb-0">
             <div class="text-center">
               <h1 class="mb-2">Termos e Condições Gerais de Contratação do fomecerta.com.br</h1>
-              <em>Atualizado em: 06 de abril de 2020</em>
+              <em>Atualizado em: 07 de abril de 2020</em>
             </div>
 
             <br />
@@ -148,7 +148,6 @@
               O Fome Certa será exclusivamente responsável pela
               intermediação entre o Restaurante e os Clientes Finais, por
               meio da Plataforma Fome Certa, e em nenhuma hipótese
-              1DocuSign Envelope ID: 7373F930-6483-46D4-B18C-2DE8AC27F8C2
               responderá por danos emergentes, lucros cessantes ou
               danos indiretos perante o Restaurante.
             </p>
@@ -299,7 +298,6 @@
               aos Clientes Finais sistema de pagamento online integrado à
               Plataforma Fome Certa (o “Sistema de Pagamentos Fome Certa”), o
               qual poderá ser fornecido, total ou parcialmente,
-              2DocuSign Envelope ID: 7373F930-6483-46D4-B18C-2DE8AC27F8C2
               diretamente pelo Fome Certa ou por terceiros por ele contratados
               para essa finalidade. Dessa forma, o Restaurante outorga ao
               Fome Certa, nos termos do art. 684 da Lei n. 10.406/2002, poderes
@@ -441,7 +439,6 @@
               Restaurante, ficando o Fome Certa desde já autorizado a reter do
               Repasse em questão os valores da Remuneração devida pelo
               Restaurante ao Fome Certa, conforme fórmula abaixo:
-              3DocuSign Envelope ID: 7373F930-6483-46D4-B18C-2DE8AC27F8C2
               Repasse = VP – VC, onde:
               “VP” significa o valor total dos Pedidos pagos por meio do
               Sistema de Pagamentos Fome Certa em um determinado dia; e
@@ -582,7 +579,6 @@
               assinatura no Contrato e pelo seu prazo de vigência, licença
               gratuita de uso dos Sinais Distintivos, os quais serão
               veiculados na Plataforma Fome Certa e em outras mídias,
-              4DocuSign Envelope ID: 7373F930-6483-46D4-B18C-2DE8AC27F8C2
               exclusivamente para fins de cumprimento do objeto do
               Contrato, responsabilizando-se o Fome Certa pelo uso indevido
               que fizer de referidos Sinais Distintivos.
@@ -732,7 +728,6 @@
               administrativo em face do Fome Certa, mas que tenha sido
               originado a partir de qualquer ação ou omissão do
               Restaurante, diretamente, ou por seus administradores,
-              5DocuSign Envelope ID: 7373F930-6483-46D4-B18C-2DE8AC27F8C2
               sócios, empregados, agentes, prepostos ou representantes,
               que configurem uma violação das leis e normas da Cláusula.
             </p>
