@@ -1,5 +1,9 @@
 @import '~vuetify/src/styles/styles.sass';
 
+.v-application .font-normal {
+  font-style: normal !important;
+}
+
 .v-card.float-over-expanded {
   margin-top: -80px;
 }
@@ -29,7 +33,7 @@
   bottom: 28px !important;
 }
 
-.form-with-fab .v-data-table tbody tr,
+.form-with-fab .v-data-table tbody tr:not(.v-data-table__empty-wrapper),
 .form-with-fab .v-data-table tbody tr .v-chip {
   cursor: pointer;
 }
@@ -44,7 +48,8 @@
     box-shadow: 0 3px 12px rgba(black, .15);
   }
 
-  .v-image, .v-avatar {
+  .v-image,
+  .v-avatar {
     border-radius: 8px 0 0 8px !important;
   }
 }
