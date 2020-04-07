@@ -54,6 +54,7 @@ export default {
   name: 'PagePasswordRetrive',
   middleware: 'guest',
   layout: 'center',
+  transition: 'scroll-x-reverse-transition',
   components: {
     Logo: () => import('@/components/Logo.vue')
   },

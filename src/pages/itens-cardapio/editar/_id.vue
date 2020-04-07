@@ -210,8 +210,8 @@
       </v-col>
     </v-row>
 
-    <v-fab-transition mode="out-in">
-      <v-btn fab fixed bottom right dark :color="fabColor" :loading="loading" @click="save">
+    <v-fab-transition>
+      <v-btn v-if="fabVisible" fab fixed bottom right dark :color="fabColor" :loading="loading" @click="save">
         <v-icon>mdi-content-save</v-icon>
       </v-btn>
     </v-fab-transition>
@@ -292,7 +292,8 @@ export default {
   data () {
     return {
       loading: true,
-      formValid: false
+      formValid: false,
+      fabVisible: false
     }
   },
   computed: {
@@ -330,6 +331,7 @@ export default {
     }
   },
   mounted () {
+    setTimeout(() => (this.fabVisible = true), 150)
     this.loading = false
   },
   methods: {

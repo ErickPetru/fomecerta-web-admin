@@ -1,5 +1,9 @@
 @import '~vuetify/src/styles/styles.sass';
 
+body {
+  background: #a10101 url('~assets/bg.jpg') center center / cover no-repeat;
+}
+
 .v-application .font-normal {
   font-style: normal !important;
 }

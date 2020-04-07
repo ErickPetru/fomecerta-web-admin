@@ -85,7 +85,7 @@
       </v-col>
     </v-row>
 
-    <v-fab-transition mode="out-in">
+    <v-fab-transition>
       <v-btn
         v-if="!loading && isInsert"
         fab

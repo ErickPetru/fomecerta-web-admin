@@ -63,6 +63,7 @@ export default {
   name: 'PageChangeUserRole',
   middleware: 'admin',
   layout: 'center',
+  transition: 'scroll-x-reverse-transition',
   components: {
     Logo: () => import('@/components/Logo.vue')
   },

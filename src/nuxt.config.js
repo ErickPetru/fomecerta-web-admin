@@ -22,6 +22,8 @@ module.exports = {
     ]
   },
   loading: { color: '#fff' },
+  layoutTransition: 'fade-transition',
+  pageTransition: 'fade-transition',
   css: [
     '~/assets/global.scss'
   ],
@@ -108,7 +110,7 @@ module.exports = {
   },
   buildDir: 'nuxt',
   build: {
-    parallel: true,
+    parallel: isDev,
     extractCSS: !isDev,
 
     extend (config, { isDev, isClient }) {

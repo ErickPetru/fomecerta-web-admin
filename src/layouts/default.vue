@@ -91,8 +91,8 @@
     <v-app-bar
       color="accent"
       dark
+      extended
       :flat="!isHome"
-      :extended="!isHome"
       :extension-height="extensionHeight"
       class="flex-grow-0"
     >
@@ -124,8 +124,8 @@ export default {
   },
   data () {
     return {
-      drawerBackground: require('@/assets/bg.jpg'),
-      drawerShow: false
+      drawerShow: false,
+      isExpanded: false
     }
   },
   computed: {
@@ -142,11 +142,15 @@ export default {
     },
 
     isHome () {
-      return this.$route.path === '/'
+      return (
+        this.$route.path === '/' ||
+        this.$route.path === '/acesso-restrito' ||
+        this.$route.path === '/atribuir-perfil'
+      )
     },
 
     extensionHeight () {
-      if (this.isHome) return null
+      if (!this.isExpanded) return 0
 
       if (
         this.$vuetify.breakpoint.name === 'xs' ||
@@ -155,6 +159,18 @@ export default {
         return 60
       } else {
         return 70
+      }
+    }
+  },
+  watch: {
+    isHome: {
+      immediate: true,
+      handler (value) {
+        if (value) {
+          setTimeout(() => (this.isExpanded = false), 250)
+        } else {
+          this.isExpanded = true
+        }
       }
     }
   },
@@ -201,5 +217,19 @@ export default {
 .v-avatar img {
   width: 30px;
   height: 30px;
+}
+
+.v-app-bar,
+.v-app-bar .v-toolbar__content,
+.v-app-bar .v-toolbar__extension {
+  will-change: height;
+  transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1) height,
+    0.2s cubic-bezier(0.4, 0, 0.2, 1) transform,
+    0.2s cubic-bezier(0.4, 0, 0.2, 1) background-color,
+    0.2s cubic-bezier(0.4, 0, 0.2, 1) left,
+    0.2s cubic-bezier(0.4, 0, 0.2, 1) right,
+    280ms cubic-bezier(0.4, 0, 0.2, 1) box-shadow,
+    0.25s cubic-bezier(0.4, 0, 0.2, 1) max-width,
+    0.25s cubic-bezier(0.4, 0, 0.2, 1) width;
 }
 </style>

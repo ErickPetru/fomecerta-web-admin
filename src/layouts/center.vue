@@ -21,6 +21,6 @@ export default {
 
 <style lang="scss" scoped>
 #app {
-  background: #a10101 url('~assets/bg.jpg') center center / cover no-repeat;
+  background: transparent;
 }
 </style>

@@ -503,8 +503,8 @@
       </v-col>
     </v-row>
 
-    <v-fab-transition mode="out-in">
-      <v-btn fab fixed bottom right dark color="indigo" :loading="loading" @click="save">
+    <v-fab-transition>
+      <v-btn v-if="fabVisible" fab fixed bottom right dark color="indigo" :loading="loading" @click="save">
         <v-icon>mdi-content-save</v-icon>
       </v-btn>
     </v-fab-transition>
@@ -664,6 +664,7 @@ export default {
       formAddressValid: false,
       formGeolocationValid: false,
       formActiveDaysValid: false,
+      fabVisible: false,
       typesOfEstablishmentSearch: '',
       defaultHours: [],
       geolocation: {
@@ -754,6 +755,7 @@ export default {
       this.defaultHours.push(hour + ':00')
     }
 
+    setTimeout(() => (this.fabVisible = true), 150)
     this.loading = false
   },
   methods: {
