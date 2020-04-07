@@ -1,6 +1,6 @@
 export default {
   required: [
-    (value) => (!!value && (!!value.length || typeof value === 'object')) || 'Preenchimento obrigatório.'
+    (value) => (!!value && (!!value.length || (typeof value === 'object' && !Array.isArray(value)))) || 'Preenchimento obrigatório.'
   ],
   fullName: [
     (value) => !!value || 'É necessário informar seu nome.',
@@ -41,7 +41,7 @@ export default {
     ],
     longitude: [
       (value) => !!value || 'Preenchimento obrigatório.',
-      (value) => !value || value.toString().length > 5|| (value > -181 && value < 181) || 'Por favor, informe um valor válido.'
+      (value) => !value || value.toString().length > 5 || (value > -181 && value < 181) || 'Por favor, informe um valor válido.'
     ]
   },
   email: [
