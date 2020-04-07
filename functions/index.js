@@ -6,9 +6,10 @@ if (!process.env.FUNCTION_NAME || process.env.FUNCTION_NAME === 'grantCustomRole
   exports.grantCustomRole = require('./grantCustomRole');
 }
 
-if (!process.env.FUNCTION_NAME || process.env.FUNCTION_NAME === 'establishmentTypesWrite') {
-  exports.establishmentTypesWrite = require('./establishmentTypesWrite');
-}
+// TODO: Re-habilitar a Cloud Functions quando conseguir fazer funcionar.
+// if (!process.env.FUNCTION_NAME || process.env.FUNCTION_NAME === 'establishmentTypesWrite') {
+//   exports.establishmentTypesWrite = require('./establishmentTypesWrite');
+// }
 
 if (!process.env.FUNCTION_NAME || process.env.FUNCTION_NAME === 'establishmentsWrite') {
   exports.establishmentsWrite = require('./establishmentsWrite');

@@ -13,8 +13,8 @@ const establishmentTypesWrite = functions.region('us-east4')
       const name = change.after.get('name')
 
       return db
-        .collectionGroup('establishmentTypes')
-        .where('id', '==', id)
+        .collection('establishments')
+        .where('typesOfEstablishment', 'array-contains', { id, name })
         .get()
         .then((snapshot) => {
           if (snapshot.empty) {
@@ -23,6 +23,7 @@ const establishmentTypesWrite = functions.region('us-east4')
             const batch = db.batch()
 
             snapshot.forEach((doc) => {
+              // TODO: Atualizar o typesOfEstablishment correto...
               batch.update(doc.ref, { name })
             })
 

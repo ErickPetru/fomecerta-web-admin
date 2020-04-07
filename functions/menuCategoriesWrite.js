@@ -13,10 +13,12 @@ const menuCategoriesWrite = functions.region('us-east4')
     if (!change.before.exists) { // Creating
       const doc = change.after.data()
 
-      return db.doc(`establishments/${doc.uid}`).update({
+      return db.doc(`establishments/${doc.uid}`).set({
         sizes: {
           menuCategories: FieldValue.increment(1)
         }
+      }, {
+        merge: true
       })
 
     } else if (change.before.exists && change.after.exists) { // Updating
@@ -43,10 +45,12 @@ const menuCategoriesWrite = functions.region('us-east4')
     } else if (!change.after.exists) { // Deleting
       const doc = change.before.data()
 
-      return db.doc(`establishments/${doc.uid}`).update({
+      return db.doc(`establishments/${doc.uid}`).set({
         sizes: {
           menuCategories: FieldValue.increment(-1)
         }
+      }, {
+        merge: true
       })
     }
 
