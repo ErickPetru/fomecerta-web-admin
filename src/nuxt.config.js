@@ -27,6 +27,7 @@ module.exports = {
     '~/assets/global.scss'
   ],
   plugins: [
+    '~/plugins/currency-filter.js',
     '~/plugins/snackbar.js',
     '~/plugins/focus.js'
   ],
