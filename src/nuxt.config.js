@@ -1,6 +1,5 @@
 const path = require('path')
 const fs = require('fs')
-const colors = require('vuetify/es5/util/colors').default
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -48,22 +47,7 @@ module.exports = {
     }]
   ],
   vuetify: {
-    customVariables: ['~/assets/variables.scss'],
-    treeShake: true,
-    theme: {
-      dark: false,
-      themes: {
-        light: {
-          primary: colors.yellow.darken2,
-          accent: colors.red.darken1,
-          secondary: colors.amber.base,
-          info: colors.blueGrey.darken1,
-          warning: colors.brown.base,
-          error: colors.deepOrange.darken4,
-          success: colors.green.darken4
-        }
-      }
-    }
+    optionsPath: './vuetify.options.js'
   },
   firebase: {
     config: {
@@ -119,8 +103,18 @@ module.exports = {
       cert: fs.readFileSync(path.resolve(__dirname, 'private/localhost.crt'))
     } : true
   },
+  configureWebpack: {
+    devtool: isDev ? 'source-map' : null
+  },
   buildDir: 'nuxt',
   build: {
-    extractCSS: !isDev
+    parallel: true,
+    extractCSS: !isDev,
+
+    extend (config, { isDev, isClient }) {
+      if (isDev) {
+        config.devtool = isClient ? 'source-map' : 'inline-source-map'
+      }
+    }
   }
 }
