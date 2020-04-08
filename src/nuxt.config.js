@@ -6,8 +6,9 @@ const isDev = process.env.NODE_ENV === 'development'
 module.exports = {
   mode: 'universal',
   head: {
-    titleTemplate: '%s - FomeCerta',
-    title: 'FomeCerta - O aplicativo certo para sua fome!',
+    titleTemplate: '%s - Fome Certa',
+    title: 'Fome Certa - O aplicativo certo para sua fome!',
+    description: 'Plataforma on-line de admininstração do aplicativo Fome Certa',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -90,6 +91,12 @@ module.exports = {
   pwa: {
     meta: false,
     icon: false,
+    manifest: {
+      name: 'Fome Certa',
+      description: 'Plataforma on-line de admininstração do aplicativo Fome Certa',
+      background_color: '#a10101',
+      lang: 'pt-BR'
+    },
     workbox: {
       importScripts: [
         '/firebase-auth-sw.js'
