@@ -21,6 +21,7 @@ node_modules
 .env
 
 # nuxt.js build output
+.nuxt
 nuxt
 
 # Nuxt generate

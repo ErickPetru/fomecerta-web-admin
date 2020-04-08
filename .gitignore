@@ -22,3 +22,10 @@ node_modules
 
 # Firebase public static folder
 public
+
+# nuxt.js build output
+.nuxt
+nuxt
+
+# Nuxt generate
+dist

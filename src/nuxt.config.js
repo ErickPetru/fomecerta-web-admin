@@ -4,7 +4,7 @@ const fs = require('fs')
 const isDev = process.env.NODE_ENV === 'development'
 
 module.exports = {
-  mode: 'universal',
+  mode: 'spa',
   head: {
     titleTemplate: '%s - Fome Certa',
     title: 'Fome Certa - O aplicativo certo para sua fome!',
@@ -68,20 +68,9 @@ module.exports = {
         initialize: {
           onAuthStateChangedAction: 'onAuthStateChanged'
         },
-        // ssr: false
-        ssr: {
-          credential: '~/private/serviceAccount.json',
-
-          serverLogin: {
-            sessionLifetime: 15 * 60 * 1000 // 15 minutes
-          }
-        }
+        ssr: false
       },
-      firestore: {
-        enablePersistence: {
-          synchronizeTabs: true
-        }
-      },
+      firestore: true,
       storage: true,
       functions: {
         location: 'us-east4'
@@ -101,9 +90,9 @@ module.exports = {
       importScripts: [
         '/firebase-auth-sw.js'
       ],
-      dev: isDev, // Hard-code back to false if HMR crashes...
+      dev: false,
       debug: isDev,
-      publicPath: '/nuxt'
+      publicPath: '/_nuxt'
     }
   },
   server: {
@@ -115,7 +104,7 @@ module.exports = {
   configureWebpack: {
     devtool: isDev ? 'source-map' : null
   },
-  buildDir: 'nuxt',
+  buildDir: '.nuxt',
   build: {
     parallel: isDev,
     extractCSS: !isDev,
