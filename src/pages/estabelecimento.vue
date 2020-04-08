@@ -504,7 +504,17 @@
     </v-row>
 
     <v-fab-transition>
-      <v-btn v-if="fabVisible" fab fixed bottom right dark color="indigo" :loading="loading" @click="save">
+      <v-btn
+        v-if="fabVisible"
+        fab
+        fixed
+        bottom
+        right
+        dark
+        color="indigo"
+        :loading="loading"
+        @click="save"
+      >
         <v-icon>mdi-content-save</v-icon>
       </v-btn>
     </v-fab-transition>
@@ -514,12 +524,22 @@
 <script>
 import { mapGetters } from 'vuex'
 import { mask } from '@titou10/v-mask'
+import { Icon } from 'leaflet'
 import { EsriProvider } from 'leaflet-geosearch'
+import { LMap, LTileLayer, LMarker } from 'vue2-leaflet'
 import { getMessage } from '@/helpers/messages'
-import imageSizes from '@/helpers/image-sizes'
 import rules from '@/helpers/validation-rules'
-import brazilianStates from '@/helpers/brazilian-states'
+import imageSizes from '@/helpers/image-sizes'
 import restrictGuests from '@/mixins/restrict-guests'
+import brazilianStates from '@/helpers/brazilian-states'
+import 'leaflet/dist/leaflet.css'
+
+delete Icon.Default.prototype._getIconUrl
+Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png')
+})
 
 const weekdays = [
   { day: 'seg', fullName: 'Segunda-feira' },
@@ -564,6 +584,7 @@ export default {
   name: 'PageEstablishment',
   middleware: 'auth',
   directives: { mask },
+  components: { LMap, LTileLayer, LMarker },
   mixins: [restrictGuests],
   async asyncData ({ app, store }) {
     const establishmentTypes = await getEstablishmentTypes(app.$fireStore)
@@ -768,6 +789,10 @@ export default {
         } else {
           this.stepper.current = this.stepper.old
         }
+
+        if (this.stepper.current === 4) {
+          await this.searchGeolocationByAddress()
+        }
       }
     },
 
@@ -911,10 +936,6 @@ export default {
 
           if (this.stepper.current < 5) {
             this.stepper.current++
-
-            if (this.stepper.current === 4) {
-              await this.searchGeolocationByAddress()
-            }
           }
         }
       } catch (error) {

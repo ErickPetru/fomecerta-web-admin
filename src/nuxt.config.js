@@ -35,12 +35,12 @@ module.exports = {
   ],
   buildModules: [
     '@nuxtjs/eslint-module',
-    '@nuxtjs/vuetify'
+    '@nuxtjs/vuetify',
+    'nuxt-webfontloader'
   ],
   modules: [
     '@nuxtjs/firebase',
     '@nuxtjs/pwa',
-    'nuxt-leaflet',
     ['vue-currency-input/nuxt', {
       globalOptions: {
         currency: 'BRL',
