@@ -10,7 +10,9 @@
     "install": "npm run install:src && npm run install:functions",
     "dev": "npm --prefix src run dev",
     "deploy": "firebase deploy",
-    "lint": "npm --prefix src run lint"
+    "lint": "npm --prefix src run lint",
+    "generate": "npm --prefix src run generate",
+    "analyze": "npm --prefix src run analyze"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config": "^2.0.2",
