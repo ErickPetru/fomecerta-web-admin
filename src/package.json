@@ -22,9 +22,11 @@
     "@titou10/v-mask": "^1.0.5",
     "firebase": "^7.13.1",
     "firebase-admin": "^8.10.0",
+    "leaflet": "^1.6.0",
     "leaflet-geosearch": "^2.7.0",
     "nodemon": "^1.19.4",
-    "nuxt-leaflet": "0.0.21",
-    "vue-currency-input": "^1.17.3"
+    "nuxt-webfontloader": "^1.1.0",
+    "vue-currency-input": "^1.17.3",
+    "vue2-leaflet": "^2.5.2"
   }
 }
