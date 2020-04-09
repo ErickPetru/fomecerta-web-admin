@@ -104,18 +104,15 @@ module.exports = {
       cert: fs.readFileSync(path.resolve(__dirname, 'private/localhost.crt'))
     } : true
   },
-  configureWebpack: {
-    devtool: isDev ? 'source-map' : null
-  },
   buildDir: '.nuxt',
   build: {
     parallel: isDev,
-    extractCSS: !isDev,
-
     extend (config, { isDev, isClient }) {
       if (isDev) {
         config.devtool = isClient ? 'source-map' : 'inline-source-map'
       }
+
+      config.optimization.splitChunks.maxSize = 220000
     }
   }
 }

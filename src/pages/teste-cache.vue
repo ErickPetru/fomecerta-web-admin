@@ -34,7 +34,7 @@ export default {
   data () {
     return {
       loading: true,
-      message: 'Atualizado em 09/04/2020 às 14:09'
+      message: 'Atualizado em 09/04/2020 às 16:04'
     }
   },
   mounted () {

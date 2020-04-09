@@ -17,16 +17,24 @@
     "nuxt": "^2.12.2"
   },
   "devDependencies": {
+    "@nuxtjs/eslint-config": "^2.0.2",
+    "@nuxtjs/eslint-module": "^1.1.0",
     "@nuxtjs/firebase": "^5.0.7",
     "@nuxtjs/pwa": "^3.0.0-beta.20",
     "@nuxtjs/vuetify": "^1.11.0",
-    "@titou10/v-mask": "^1.0.5",
-    "firebase": "^7.13.1",
+    "@titou10/v-mask": "^1.0.6",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-plugin-nuxt": "^0.5.2",
+    "eslint-plugin-prettier": "^3.1.2",
+    "firebase": "^7.13.2",
     "firebase-admin": "^8.10.0",
     "leaflet": "^1.6.0",
     "leaflet-geosearch": "^2.7.0",
     "nodemon": "^1.19.4",
     "nuxt-webfontloader": "^1.1.0",
+    "prettier": "^1.19.1",
     "vue-currency-input": "^1.17.3",
     "vue2-leaflet": "^2.5.2"
   }
