@@ -9,7 +9,7 @@
     "install:functions": "cd functions && npm i && cd ..",
     "install": "npm run install:src && npm run install:functions",
     "dev": "npm --prefix src run dev",
-    "deploy": "firebase deploy",
+    "deploy": "firebase deploy --only hosting",
     "lint": "npm --prefix src run lint",
     "generate": "npm --prefix src run generate",
     "analyze": "npm --prefix src run analyze"
