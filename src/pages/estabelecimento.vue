@@ -126,7 +126,7 @@
                     truncate-length="50"
                     accept=".jpg, .jpeg, .png"
                     :loading="loading"
-                    :readonly="loading"
+                    :disabled="loading"
                     @change="onImageChange"
                   />
                 </v-form>
@@ -319,8 +319,6 @@
                               ref="markerObject"
                               :lat-lng.sync="formData.geolocation"
                               :draggable="true"
-                              :auto-pan="true"
-                              :auto-pan-padding="[15, 15]"
                             />
                           </l-map>
                         </client-only>
