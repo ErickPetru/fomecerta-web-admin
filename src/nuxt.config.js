@@ -84,15 +84,18 @@ module.exports = {
       name: 'Fome Certa',
       description: 'Plataforma on-line de admininstração do aplicativo Fome Certa',
       background_color: '#a10101',
-      lang: 'pt-BR'
+      lang: 'pt-BR',
+      display: 'browser'
     },
     workbox: {
-      importScripts: [
-        '/firebase-auth-sw.js'
-      ],
       dev: false,
       debug: isDev,
-      publicPath: '/_nuxt'
+      publicPath: '/_nuxt',
+      cleanupOutdatedCaches: true,
+      cacheNames: {
+        prefix: 'fomecerta-web-admin',
+        suffix: 'v2004091318'
+      }
     }
   },
   server: {
