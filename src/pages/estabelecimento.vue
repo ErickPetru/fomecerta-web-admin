@@ -836,7 +836,7 @@ export default {
             price: this.deliveryPriceRaw
           }
 
-          const typesOfEstablishmentOld = this.formData.typesOfEstablishmentOld
+          const typesOfEstablishmentOld = this.formData.typesOfEstablishmentOld || []
           const typesOfEstablishment = this.formData.typesOfEstablishment || []
 
           if (typesOfEstablishmentOld.length) {
