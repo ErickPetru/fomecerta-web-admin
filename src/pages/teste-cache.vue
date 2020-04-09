@@ -34,7 +34,7 @@ export default {
   data () {
     return {
       loading: true,
-      message: 'Tchau Mundo!'
+      message: 'Olá Mundo!'
     }
   },
   mounted () {
