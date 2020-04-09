@@ -520,7 +520,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import { mask } from '@titou10/v-mask'
 import { Icon } from 'leaflet'
 import { EsriProvider } from 'leaflet-geosearch'
@@ -703,8 +702,6 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['authUser']),
-
     formRules () {
       return {
         name: rules.required,
