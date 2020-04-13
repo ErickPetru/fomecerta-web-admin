@@ -10,7 +10,7 @@ export default ({ store }, inject) => {
       }
 
       if (color && icon === 'information') {
-        if (color === 'warning') icon = 'exclamation'
+        if (color === 'warning') icon = 'exclamation-thick'
         else if (color === 'success') icon = 'check-circle'
         else if (color === 'error') icon = 'alert'
       }
