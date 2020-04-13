@@ -42,6 +42,20 @@
       <v-subheader class="caption">Configurações</v-subheader>
 
       <v-list>
+        <v-list-item
+          v-if="authUser && authUser.role === 'admin'"
+          to="/tipos-estabelecimento"
+          router
+          exact
+        >
+          <v-list-item-action>
+            <v-icon>mdi-shape</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>Tipos</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
         <v-list-item to="/estabelecimento" router exact>
           <v-list-item-action>
             <v-icon>mdi-domain</v-icon>

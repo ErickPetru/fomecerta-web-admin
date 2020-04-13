@@ -10,91 +10,21 @@
             <v-toolbar-title class="pa-0">{{ $metaInfo.title }}</v-toolbar-title>
           </v-toolbar>
 
-          <v-card-text class="pa-5 pt-3">
+          <v-card-text class="pa-5 pt-3 pb-3">
             <v-data-table
               v-model="selected"
               :headers="headers"
               :loading="loading"
               :items="items"
-              :sort-by.sync="sortBy"
+              :options.sync="options"
+              :footer-props="{ 'items-per-page-options': [10] }"
+              :server-items-length="options.total"
               must-sort
-              disable-pagination
-              hide-default-footer
               show-select
               single-select
               @click:row="rowClicked"
               @item-selected="itemSelected"
             >
-              <template #item.synonyms="{ item }">
-                <span v-if="!item.synonyms" class="caption">Nenhum sinônimo</span>
-
-                <v-tooltip v-else-if="item.synonyms.length === 1" top color="info" max-width="300">
-                  <v-chip
-                    small
-                    label
-                    dark
-                    color="info"
-                    :input-value="true"
-                    class="ma-1"
-                  >{{ item.synonyms[0] }}</v-chip>
-                  <template #activator="{ on }">
-                    <span v-on="on">
-                      <span class="caption">1 sinônimo</span>
-                      <v-icon small color="info">mdi-more</v-icon>
-                    </span>
-                  </template>
-                </v-tooltip>
-
-                <v-tooltip v-else top color="info" max-width="300">
-                  <v-chip
-                    v-for="(synonym, index) of item.synonyms"
-                    :key="index"
-                    small
-                    label
-                    dark
-                    color="info"
-                    :input-value="true"
-                    class="ma-1"
-                  >{{ synonym }}</v-chip>
-                  <template #activator="{ on }">
-                    <span v-on="on">
-                      <span class="caption">{{ item.synonyms.length }} sinônimos</span>
-                      <v-icon small color="info">mdi-more</v-icon>
-                    </span>
-                  </template>
-                </v-tooltip>
-              </template>
-              <template #item.imageURL="{ item }">
-                <v-tooltip
-                  v-if="!!item.imageURL"
-                  top
-                  color="info"
-                  max-width="100"
-                  content-class="image-tooltip"
-                >
-                  <v-img
-                    :src="item.imageURL.replace('_1000x1000', '_400x400')"
-                    max-width="100"
-                    width="100"
-                    height="100"
-                    class="ma-0 pa-0"
-                  >
-                    <template #placeholder>
-                      <v-row class="fill-height ma-0" align="center" justify="center">
-                        <v-progress-circular indeterminate color="grey lighten-5" />
-                      </v-row>
-                    </template>
-                  </v-img>
-                  <template #activator="{ on }">
-                    <span v-on="on">
-                      <span class="caption font-weight-medium success--text">Sim</span>
-                      <v-icon small color="info">mdi-more</v-icon>
-                    </span>
-                  </template>
-                </v-tooltip>
-
-                <span v-else class="caption error--text">Não</span>
-              </template>
               <template #item.usedBy="{ item }">
                 <span
                   v-if="!!item.usedBy"
@@ -174,32 +104,12 @@
 
 <script>
 import { getMessage } from '@/helpers/messages'
-import imageSizes from '@/helpers/image-sizes'
-import restrictGuests from '@/mixins/restrict-guests'
+import restrictNotAdmin from '@/mixins/restrict-not-admin'
 
 export default {
-  name: 'PageMenuCategories',
-  middleware: 'auth',
-  mixins: [restrictGuests],
-  async asyncData ({ app, store }) {
-    const snapshot = await app.$fireStore
-      .collection('menuCategories')
-      .where('uid', '==', store.state.authUser.uid)
-      .orderBy('name', 'asc')
-      .get()
-
-    return {
-      items: snapshot.docs.map((doc) => {
-        return {
-          id: doc.id,
-          name: doc.get('name'),
-          synonyms: doc.get('synonyms'),
-          imageURL: doc.get('imageURL'),
-          usedBy: doc.get('usedBy')
-        }
-      })
-    }
-  },
+  name: 'PageEstablishmentTypes',
+  middleware: 'admin',
+  mixins: [restrictNotAdmin],
   data () {
     return {
       loading: true,
@@ -207,14 +117,23 @@ export default {
       speedDial: false,
       speedDialTimer: null,
       showRemoveDialog: false,
-      sortBy: 'name',
       selected: [],
+      options: {
+        sortBy: ['name'],
+        itemsPerPage: 10,
+        lastPage: null,
+        total: 0
+      },
       headers: [
         { text: 'Nome', value: 'name' },
-        { text: 'Sinônimos', value: 'synonyms' },
-        { text: 'Imagem', value: 'imageURL' },
-        { text: 'Itens', value: 'usedBy' }
-      ]
+        {
+          text: 'Estabelecimentos',
+          value: 'usedBy',
+          sortable: false,
+          width: 150
+        }
+      ],
+      items: []
     }
   },
   computed: {
@@ -231,19 +150,77 @@ export default {
     },
 
     destinationInsert () {
-      return '/categorias-cardapio/incluir'
+      return '/tipos-estabelecimento/incluir'
     },
 
     destinationEdit () {
       return this.selectedItem
-        ? `/categorias-cardapio/editar/${this.selectedItem.id}`
+        ? `/tipos-estabelecimento/editar/${this.selectedItem.id}`
         : null
+    }
+  },
+  watch: {
+    options: {
+      deep: true,
+      handler: 'get'
     }
   },
   mounted () {
     this.loading = false
   },
   methods: {
+    async get (val, oldVal) {
+      if (
+        val.page === oldVal.page &&
+        val.itemsPerPage === oldVal.itemsPerPage &&
+        val.sortBy === oldVal.sortBy &&
+        val.sortDesc === oldVal.sortDesc
+      ) {
+        return false
+      }
+
+      this.loading = true
+      this.selectedItem = null
+
+      try {
+        const count = await this.$fireStore.doc('sizes/global').get()
+        this.options.total = count.exists ? count.get('establishmentTypes') : 0
+
+        const { page, itemsPerPage, lastPage } = this.options
+        let { sortBy, sortDesc } = this.options
+
+        sortBy = sortBy ? sortBy[0] : null
+        sortDesc = sortDesc ? sortDesc[0] : null
+
+        let query = this.$fireStore
+          .collection('establishmentTypes')
+          .orderBy(sortBy, sortDesc ? 'desc' : 'asc')
+
+        if (lastPage && lastPage < page) {
+          const start = this.items[this.items.length - 1][sortBy]
+          query = query.startAfter(start).limit(itemsPerPage)
+        } else if (lastPage && lastPage > page) {
+          const end = this.items[0][sortBy]
+          query = query.endBefore(end).limitToLast(itemsPerPage)
+        } else {
+          query = query.limit(itemsPerPage)
+        }
+
+        const snapshot = await query.get()
+        this.options.lastPage = page
+
+        this.items = snapshot.docs.map((doc) => {
+          return {
+            id: doc.id,
+            name: doc.get('name'),
+            usedBy: doc.get('usedBy')
+          }
+        })
+      } finally {
+        this.loading = false
+      }
+    },
+
     async remove () {
       try {
         this.showRemoveDialog = false
@@ -252,7 +229,7 @@ export default {
         this.loading = true
 
         const doc = await this.$fireStore
-          .collection('menuCategories')
+          .collection('establishmentTypes')
           .doc(this.selectedItem.id)
           .get()
 
@@ -260,27 +237,18 @@ export default {
           return this.localRemove()
         }
 
-        if (doc.get('imageURL')) {
-          for (const size of ['', ...imageSizes]) {
-            const ref = this.$fireStorage.ref(`menuCategories/${doc.id}${size}`)
-            ref
-              .getDownloadURL()
-              .then(() => {
-                ref.delete()
-              })
-              .catch(() => {
-                return true
-              })
-          }
-        }
-
         const batch = this.$fireStore.batch()
+        const increment = this.$fireStoreObj.FieldValue.increment
 
-        batch.update(this.$fireStore.doc(`establishments/${doc.get('uid')}`), {
-          'sizes.menuCategories': this.$fireStoreObj.FieldValue.increment(-1)
-        })
+        batch.set(
+          this.$fireStore.doc('sizes/global'),
+          {
+            establishmentTypes: increment(-1)
+          },
+          { merge: true }
+        )
 
-        batch.delete(this.$fireStore.doc(`menuCategories/${doc.id}`))
+        batch.delete(this.$fireStore.doc(`establishmentTypes/${doc.id}`))
         await batch.commit()
 
         return this.localRemove()
@@ -339,7 +307,7 @@ export default {
     }
   },
   head: () => ({
-    title: 'Categorias do cardápio'
+    title: 'Tipos de estabelecimento'
   })
 }
 </script>
