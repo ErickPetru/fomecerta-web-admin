@@ -23,6 +23,16 @@
     "trailingSlash": false,
     "headers": [
       {
+        "source": "/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+          }
+        ]
+      },
+
+      {
         "source": "/sw.js",
         "headers": [
           {
@@ -33,11 +43,12 @@
       },
 
       {
-        "source": "**/*.html",
+        "source":
+          "**/*.@(jpg|jpeg|gif|png|svg|webp|js|css|eot|otf|ttf|ttc|woff|woff2|font.css)",
         "headers": [
           {
             "key": "Cache-Control",
-            "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+            "value": "max-age=86400"
           }
         ]
       }
